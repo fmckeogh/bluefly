@@ -10,13 +10,11 @@
 
 
 ## Features
-
 * Full telemetry and configuration of VESC from remote
 * 100 hours per charge (acheiveable with single LG MJ1, final design aims for 2)
 * Comfortable - long journeys should not tire the user's hand
 
 ## Components
-
 * STM32L081KZ (subject to change)
 * SSD1306 display (looking for something larger OR that draws less current)
 * CC1101 radio
@@ -24,7 +22,6 @@
 * SS49E hall effect sensor (lying around on my desk)
 
 ## TODO
-
 ### Software 
 - [ ] Create telemetry display
 - [ ] Get radios working (packet abstraction?)
@@ -38,7 +35,6 @@
 - [ ] Design enclosure, borrowing heavily from [solidgeek's NRF remote](http://www.electric-skateboard.builders/t/simple-3d-printed-nrf-remote-arduino-controlled/28543)
 
 
-# License
-
+## License
 Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
   http://www.apache.org/licenses/LICENSE-2.0)
