@@ -1,20 +1,20 @@
 #  mremote
 > Encrypted electric longboard remote with telemetry and lighting
 
-# Building
+## Building
 
 ```xargo build --release``` builds an ELF file at ```./target/thumbv7m-none-eabi/release/mremote```.
 
 ```make install``` builds, creates a binary and flashes it using st-flash.
 
 
-# Features
+## Features
 
 * Full telemetry and configuration of VESC from remote
 * 100 hours per charge (acheiveable with single LG MJ1, final design aims for 2)
 * Comfortable - long journeys should not tire the user's hand
 
-# Components
+## Components
 
 * STM32L081KZ (subject to change)
 * SSD1306 display (looking for something larger OR that draws less current)
@@ -22,19 +22,19 @@
 * 2x LG MJ1 batteries
 * SS49E hall effect sensor (lying around on my desk)
 
-# TODO
+## TODO
 
-## Software 
-[] - Create telemetry display
-[] - Get radios working (packet abstraction?)
-[] - Implement RTFM
-[] - Configuartion menu for VESC
-[] - Customisation of screen
+### Software 
+- [] Create telemetry display
+- [] Get radios working (packet abstraction?)
+- [] Implement RTFM
+- [] Configuartion menu for VESC
+- [] Customisation of screen
 
-## Hardware
-[] - Finalise breadboard design of both remote and receiver
-[] - PCB design of both remote and receiver
-[] - Design enclosure, borrowing heavily from [solidgeek's NRF remote](http://www.electric-skateboard.builders/t/simple-3d-printed-nrf-remote-arduino-controlled/28543)
+### Hardware
+- [] Finalise breadboard design of both remote and receiver
+- [] PCB design of both remote and receiver
+- [] Design enclosure, borrowing heavily from [solidgeek's NRF remote](http://www.electric-skateboard.builders/t/simple-3d-printed-nrf-remote-arduino-controlled/28543)
 
 
 # License
