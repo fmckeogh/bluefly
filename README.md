@@ -25,16 +25,16 @@
 ## TODO
 
 ### Software 
-- [] Create telemetry display
-- [] Get radios working (packet abstraction?)
-- [] Implement RTFM
-- [] Configuartion menu for VESC
-- [] Customisation of screen
+- [ ] Create telemetry display
+- [ ] Get radios working (packet abstraction?)
+- [ ] Implement RTFM
+- [ ] Configuartion menu for VESC
+- [ ] Customisation of screen
 
 ### Hardware
-- [] Finalise breadboard design of both remote and receiver
-- [] PCB design of both remote and receiver
-- [] Design enclosure, borrowing heavily from [solidgeek's NRF remote](http://www.electric-skateboard.builders/t/simple-3d-printed-nrf-remote-arduino-controlled/28543)
+- [ ] Finalise breadboard design of both remote and receiver
+- [ ] PCB design of both remote and receiver
+- [ ] Design enclosure, borrowing heavily from [solidgeek's NRF remote](http://www.electric-skateboard.builders/t/simple-3d-printed-nrf-remote-arduino-controlled/28543)
 
 
 # License
