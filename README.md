@@ -2,6 +2,7 @@
 > Encrypted electric longboard remote with telemetry and lighting
 
 ## Building
+[![Build Status](https://travis-ci.org/chocol4te/mremote.svg?branch=master)](https://travis-ci.org/chocol4te/mremote)
 
 ```xargo build --release``` builds an ELF file at ```./target/thumbv7m-none-eabi/release/mremote```.
 
