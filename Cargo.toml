@@ -44,9 +44,11 @@ version = "*"
 
 [dependencies.ssd1306]
 git = "https://github.com/jamwaffles/ssd1306.git"
+rev = "eb4c8428c4c6c0fa57b8e3d41d80b7f1c7d43e64"
 
 [dependencies.embedded-graphics]
 git = "https://github.com/jamwaffles/embedded-graphics.git"
+rev = "a52f8a86215c3606a73f6321359a014d07d7f3c4"
 
 [dependencies.cortex-m-rt]
 version = "0.3.12"
