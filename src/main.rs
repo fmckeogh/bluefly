@@ -1,45 +1,69 @@
 #![deny(unsafe_code)]
 #![deny(warnings)]
+#![feature(proc_macro)]
 #![no_std]
 
 extern crate cortex_m;
+extern crate cortex_m_rtfm as rtfm;
 extern crate panic_abort;
 extern crate stm32f103xx_hal as hal;
 extern crate embedded_graphics;
 extern crate ssd1306;
 
+use cortex_m::peripheral::syst::SystClkSource;
+use rtfm::{app, Threshold};
+
 use hal::prelude::*;
 use hal::i2c::{DutyCycle, I2c, Mode};
 use hal::stm32f103xx;
+use hal::stm32f103xx::I2C1;
+use hal::gpio::gpiob::{PB6, PB7};
+use hal::gpio::{Alternate, OpenDrain};
 
 use embedded_graphics::prelude::*;
 use embedded_graphics::Drawing;
 use embedded_graphics::fonts::{Font, Font6x8};
 use ssd1306::{mode::GraphicsMode, Builder, DisplaySize};
+use ssd1306::interface::I2cInterface;
 
+pub type OledDisplay =
+    GraphicsMode<I2cInterface<I2c<I2C1, (PB6<Alternate<OpenDrain>>, PB7<Alternate<OpenDrain>>)>>>;
 
-fn main() {
-    let _cp = cortex_m::Peripherals::take().unwrap();
-    let dp = stm32f103xx::Peripherals::take().unwrap();
+app! {
+    device: stm32f103xx,
 
-    let mut flash = dp.FLASH.constrain();
-    let mut rcc = dp.RCC.constrain();
-    let mut afio = dp.AFIO.constrain(&mut rcc.apb2);
+    resources: {
+        static STATE: bool;
+        static DISPLAY: OledDisplay;
+    },
+
+    tasks: {
+        SYS_TICK: {
+            path: sys_tick,
+            resources: [STATE, DISPLAY],
+        },
+    },
+}
+
+fn init(p: init::Peripherals) -> init::LateResources {
+    let mut flash = p.device.FLASH.constrain();
+    let mut rcc = p.device.RCC.constrain();
+    let mut afio = p.device.AFIO.constrain(&mut rcc.apb2);
 
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
-    //let mut timer = Timer::syst(cp.SYST, 1.hz(), clocks);
 
+    let mut syst = p.core.SYST;
+    syst.set_clock_source(SystClkSource::Core);
+    syst.set_reload(8_000_000);
+    syst.enable_interrupt();
+    syst.enable_counter();
 
-    let mut gpiob = dp.GPIOB.split(&mut rcc.apb2);
-//    let mut gpioc = dp.GPIOC.split(&mut rcc.apb2);
-
-//    let mut led = gpioc.pc13.into_push_pull_output(&mut gpioc.crh);
+    let mut gpiob = p.device.GPIOB.split(&mut rcc.apb2);
 
     let scl = gpiob.pb6.into_alternate_open_drain(&mut gpiob.crl);
     let sda = gpiob.pb7.into_alternate_open_drain(&mut gpiob.crl);
-
-    let i2c = I2c::i2c1(
-        dp.I2C1,
+    let i2c1 = I2c::i2c1(
+        p.device.I2C1,
         (scl, sda),
         &mut afio.mapr,
         Mode::Fast {
@@ -50,29 +74,52 @@ fn main() {
         &mut rcc.apb1,
     );
 
-    let mut disp: GraphicsMode<_> = Builder::new()
+    let mut display: GraphicsMode<_> = Builder::new()
         .with_size(DisplaySize::Display128x64)
-        .connect_i2c(i2c)
+        .connect_i2c(i2c1)
         .into();
 
-    disp.init().unwrap();
-    disp.flush().unwrap();
+    display.init().unwrap();
+    display.flush().unwrap();
 
-    disp.draw(Font6x8::render_str("Hello, world!").translate((0, 0)).into_iter());
+    display.draw(Font6x8::render_str("TRUE").translate((0, 0)).into_iter());
 
-    disp.flush().unwrap();
+    display.flush().unwrap();
+
+    init::LateResources {
+        STATE: false,
+        DISPLAY: display,
+    }
 }
-/*
-// Called to nearly continuously read data from input sensors and update values in memory
-fn read_input () {
+
+fn idle() -> ! {
+    loop {
+        rtfm::wfi();
+    }
 }
-// Called on packet received interrupt from CC1101
-fn read_packet() {
-    // Decrypt in GCM
-    // Write to screen?
-    // Depends how long that takes, I don't want to miss a packet, nor do I want to have to build a buffer system
+
+fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
+    /*
+    let state: &'static mut bool = r.STATE;
+    let mut display: &'static mut OledDisplay = r.DISPLAY;
+
+    let mut display: GraphicsMode<_> = Builder::new()
+        .with_size(DisplaySize::Display128x32)
+        .with_i2c_addr(0x3C)
+        .connect_i2c(i2c1)
+        .into();
+    */
+
+    r.DISPLAY.init().unwrap();
+    r.DISPLAY.flush().unwrap();
+
+    r.DISPLAY.clear();
+
+    match *r.STATE {
+        true => r.DISPLAY.draw(Font6x8::render_str("TRUE").translate((0, 0)).into_iter()),
+        false => r.DISPLAY.draw(Font6x8::render_str("FALSE").translate((0, 0)).into_iter()),
+    }
+
+    r.DISPLAY.flush().unwrap();
+    *r.STATE = !*r.STATE;
 }
-// Called every n milliseconds, sends currently stored values in memory
-fn send_packet() {
-}
-*/
