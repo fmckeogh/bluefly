@@ -12,6 +12,7 @@ use hal::prelude::*;
 use hal::i2c::{DutyCycle, I2c, Mode};
 use hal::stm32f103xx;
 
+use embedded_graphics::prelude::*;
 use embedded_graphics::Drawing;
 use embedded_graphics::fonts::{Font, Font6x8};
 use ssd1306::{mode::GraphicsMode, Builder, DisplaySize};
@@ -36,12 +37,13 @@ fn main() {
 
     let scl = gpiob.pb6.into_alternate_open_drain(&mut gpiob.crl);
     let sda = gpiob.pb7.into_alternate_open_drain(&mut gpiob.crl);
+
     let i2c = I2c::i2c1(
         dp.I2C1,
         (scl, sda),
         &mut afio.mapr,
         Mode::Fast {
-            frequency: 400_000,
+            frequency: 200_000,
             duty_cycle: DutyCycle::Ratio1to1,
         },
         clocks,
@@ -49,14 +51,14 @@ fn main() {
     );
 
     let mut disp: GraphicsMode<_> = Builder::new()
-        .with_size(DisplaySize::Display128x32)
+        .with_size(DisplaySize::Display128x64)
         .connect_i2c(i2c)
         .into();
 
     disp.init().unwrap();
     disp.flush().unwrap();
 
-    disp.draw(Font6x8::render_str("Test").into_iter());
+    disp.draw(Font6x8::render_str("Hello, world!").translate((0, 0)).into_iter());
 
     disp.flush().unwrap();
 }
