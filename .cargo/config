@@ -2,37 +2,41 @@
 runner = 'arm-none-eabi-gdb'
 rustflags = [
   "-C", "link-arg=-Tlink.x",
-  "-C", "linker=arm-none-eabi-ld",
-  "-Z", "linker-flavor=ld",
-  "-Z", "thinlto=no",
+  "-C", "linker=lld",
+  "-Z", "linker-flavor=ld.lld",
+  # "-C", "linker=arm-none-eabi-ld",
+  # "-Z", "linker-flavor=ld",
 ]
 
 [target.thumbv7m-none-eabi]
 runner = 'arm-none-eabi-gdb'
 rustflags = [
   "-C", "link-arg=-Tlink.x",
-  "-C", "linker=arm-none-eabi-ld",
-  "-Z", "linker-flavor=ld",
-  "-Z", "thinlto=no",
+  "-C", "linker=lld",
+  "-Z", "linker-flavor=ld.lld",
+  # "-C", "linker=arm-none-eabi-ld",
+  # "-Z", "linker-flavor=ld",
 ]
 
 [target.thumbv7em-none-eabi]
 runner = 'arm-none-eabi-gdb'
 rustflags = [
   "-C", "link-arg=-Tlink.x",
-  "-C", "linker=arm-none-eabi-ld",
-  "-Z", "linker-flavor=ld",
-  "-Z", "thinlto=no",
+  "-C", "linker=lld",
+  "-Z", "linker-flavor=ld.lld",
+  # "-C", "linker=arm-none-eabi-ld",
+  # "-Z", "linker-flavor=ld",
 ]
 
 [target.thumbv7em-none-eabihf]
 runner = 'arm-none-eabi-gdb'
 rustflags = [
   "-C", "link-arg=-Tlink.x",
-  "-C", "linker=arm-none-eabi-ld",
-  "-Z", "linker-flavor=ld",
-  "-Z", "thinlto=no",
+  "-C", "linker=lld",
+  "-Z", "linker-flavor=ld.lld",
+  # "-C", "linker=arm-none-eabi-ld",
+  # "-Z", "linker-flavor=ld",
 ]
 
 [build]
-target = "thumbv7m-none-eabi"
+target = "thumbv7m-none-eabi" # For bluepill dev board, STM32L081 is thumbv6m-none-eabi
