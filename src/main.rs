@@ -80,10 +80,7 @@ fn init(p: init::Peripherals) -> init::LateResources {
         .into();
 
     display.init().unwrap();
-    display.flush().unwrap();
-
-    display.draw(Font6x8::render_str("TRUE").translate((0, 0)).into_iter());
-
+    display.clear();
     display.flush().unwrap();
 
     init::LateResources {
@@ -109,9 +106,6 @@ fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
         .connect_i2c(i2c1)
         .into();
     */
-
-    r.DISPLAY.init().unwrap();
-    r.DISPLAY.flush().unwrap();
 
     r.DISPLAY.clear();
 
