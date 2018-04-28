@@ -25,7 +25,7 @@
 ### Software 
 - [ ] Create telemetry display
 - [ ] Get radios working (packet abstraction?)
-- [ ] Implement RTFM
+- [x] Implement RTFM
 - [ ] Configuartion menu for VESC
 - [ ] Customisation of screen
 
