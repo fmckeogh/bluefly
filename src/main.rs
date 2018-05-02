@@ -23,7 +23,9 @@ use hal::gpio::{Alternate, OpenDrain};
 use embedded_graphics::prelude::*;
 use embedded_graphics::Drawing;
 use embedded_graphics::fonts::{Font, Font6x8};
-use ssd1306::{mode::GraphicsMode, Builder, DisplaySize};
+use ssd1306::Builder;
+use ssd1306::mode::GraphicsMode;
+use ssd1306::prelude::DisplaySize;
 use ssd1306::interface::I2cInterface;
 
 pub type OledDisplay =

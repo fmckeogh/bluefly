@@ -54,7 +54,7 @@ version = "*"
 
 [dependencies.ssd1306]
 git = "https://github.com/jamwaffles/ssd1306.git"
-version = "*"
+rev = "a6e1661"
 
 [dependencies.embedded-graphics]
 version = "0.1.1"
