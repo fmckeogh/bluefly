@@ -6,7 +6,7 @@
 
 ```cargo build --release``` builds an ELF file at ```./target/thumbv7m-none-eabi/release/mremote```.
 
-```make``` builds, creates a binary and flashes it using st-flash.
+```make``` builds the project, creates a binary and flashes it using st-flash.
 
 
 ## Features
