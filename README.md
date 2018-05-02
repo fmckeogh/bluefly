@@ -2,7 +2,7 @@
 > Encrypted electric longboard remote with telemetry and lighting
 
 ## Building
-[![Build Status](https://travis-ci.org/chocol4te/mremote-firmware.svg?branch=master)](https://travis-ci.org/chocol4te/mremote-firmware)
+[![Build Status](https://travis-ci.org/chocol4te/mremote.svg?branch=master)](https://travis-ci.org/chocol4te/mremote)
 
 ```cargo build --release``` builds an ELF file at ```./target/thumbv7m-none-eabi/release/mremote```.
 
@@ -25,8 +25,9 @@
 ### Software 
 - [ ] Create telemetry display
 - [ ] Get radios working (packet abstraction?)
-- [ ] Implement RTFM
+- [x] Implement RTFM
 - [ ] Configuartion menu for VESC
+- [ ] VESC firmware update from remote
 - [ ] Customisation of screen
 
 ### Hardware
