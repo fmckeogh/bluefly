@@ -33,7 +33,7 @@
 ### Hardware
 - [ ] Finalise breadboard design of both remote and receiver
 - [ ] PCB design of both remote and receiver
-- [ ] Design enclosure, borrowing heavily from [solidgeek's NRF remote](http://www.electric-skateboard.builders/t/simple-3d-printed-nrf-remote-arduino-controlled/28543)
+- [ ] Design enclosure, thumb wheel, maybe forefinger hole?
 
 
 ## License
