@@ -4,34 +4,34 @@
 #![feature(alloc)]
 #![no_std]
 
+extern crate alloc_cortex_m;
 extern crate cortex_m;
 extern crate cortex_m_rtfm as rtfm;
-extern crate alloc_cortex_m;
 #[macro_use]
 extern crate alloc;
-extern crate panic_abort;
-extern crate stm32f103xx_hal as hal;
 extern crate embedded_graphics;
+extern crate panic_abort;
 extern crate ssd1306;
+extern crate stm32f103xx_hal as hal;
 
+use alloc_cortex_m::CortexMHeap;
 use cortex_m::peripheral::syst::SystClkSource;
 use rtfm::{app, Threshold};
-use alloc_cortex_m::CortexMHeap;
 
-use hal::prelude::*;
-use hal::i2c::{DutyCycle, I2c, Mode};
-use hal::stm32f103xx;
-use hal::stm32f103xx::I2C1;
 use hal::gpio::gpiob::{PB6, PB7};
 use hal::gpio::{Alternate, OpenDrain};
+use hal::i2c::{DutyCycle, I2c, Mode};
+use hal::prelude::*;
+use hal::stm32f103xx;
+use hal::stm32f103xx::I2C1;
 
+use embedded_graphics::fonts::{Font, Font6x8};
 use embedded_graphics::prelude::*;
 use embedded_graphics::Drawing;
-use embedded_graphics::fonts::{Font, Font6x8};
-use ssd1306::Builder;
+use ssd1306::interface::I2cInterface;
 use ssd1306::mode::GraphicsMode;
 use ssd1306::prelude::DisplaySize;
-use ssd1306::interface::I2cInterface;
+use ssd1306::Builder;
 
 #[global_allocator]
 static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
@@ -62,9 +62,7 @@ app! {
 
 fn init(p: init::Peripherals) -> init::LateResources {
     let heap_start = unsafe { &mut _sheap as *mut u32 as usize };
-    unsafe {
-        ALLOCATOR.init(heap_start, 1024)
-    }
+    unsafe { ALLOCATOR.init(heap_start, 1024) }
 
     let mut flash = p.device.FLASH.constrain();
     let mut rcc = p.device.RCC.constrain();
@@ -138,6 +136,14 @@ fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
 }
 
 fn write_display(display: &mut OledDisplay, state: bool, count: u64) {
-    display.draw(Font6x8::render_str(&format!("STATE: {}", state)).translate((0, 0)).into_iter());
-    display.draw(Font6x8::render_str(&format!("COUNT: {}", count)).translate((0, 12)).into_iter());
+    display.draw(
+        Font6x8::render_str(&format!("STATE: {}", state))
+            .translate((0, 0))
+            .into_iter(),
+    );
+    display.draw(
+        Font6x8::render_str(&format!("COUNT: {}", count))
+            .translate((0, 12))
+            .into_iter(),
+    );
 }
