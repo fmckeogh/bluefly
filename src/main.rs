@@ -130,10 +130,14 @@ fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
 
     r.DISPLAY.clear();
 
-    r.DISPLAY.draw(Font6x8::render_str(&format!("STATE: {}", *r.STATE)).translate((0, 0)).into_iter());
-    r.DISPLAY.draw(Font6x8::render_str(&format!("COUNT: {}", *r.COUNT)).translate((0, 12)).into_iter());
+    write_display(&mut *r.DISPLAY, *r.STATE, *r.COUNT);
 
     r.DISPLAY.flush().unwrap();
     *r.COUNT += 1;
     *r.STATE = !*r.STATE;
+}
+
+fn write_display(display: &mut OledDisplay, state: bool, count: u64) {
+    display.draw(Font6x8::render_str(&format!("STATE: {}", state)).translate((0, 0)).into_iter());
+    display.draw(Font6x8::render_str(&format!("COUNT: {}", count)).translate((0, 12)).into_iter());
 }
