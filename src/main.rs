@@ -1,10 +1,14 @@
-#![deny(unsafe_code)]
 #![deny(warnings)]
 #![feature(proc_macro)]
+#![feature(global_allocator)]
+#![feature(alloc)]
 #![no_std]
 
 extern crate cortex_m;
 extern crate cortex_m_rtfm as rtfm;
+extern crate alloc_cortex_m;
+#[macro_use]
+extern crate alloc;
 extern crate panic_abort;
 extern crate stm32f103xx_hal as hal;
 extern crate embedded_graphics;
@@ -12,6 +16,7 @@ extern crate ssd1306;
 
 use cortex_m::peripheral::syst::SystClkSource;
 use rtfm::{app, Threshold};
+use alloc_cortex_m::CortexMHeap;
 
 use hal::prelude::*;
 use hal::i2c::{DutyCycle, I2c, Mode};
@@ -28,6 +33,13 @@ use ssd1306::mode::GraphicsMode;
 use ssd1306::prelude::DisplaySize;
 use ssd1306::interface::I2cInterface;
 
+#[global_allocator]
+static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
+
+extern "C" {
+    static mut _sheap: u32;
+}
+
 pub type OledDisplay =
     GraphicsMode<I2cInterface<I2c<I2C1, (PB6<Alternate<OpenDrain>>, PB7<Alternate<OpenDrain>>)>>>;
 
@@ -36,18 +48,24 @@ app! {
 
     resources: {
         static STATE: bool;
+        static COUNT: u64;
         static DISPLAY: OledDisplay;
     },
 
     tasks: {
         SYS_TICK: {
             path: sys_tick,
-            resources: [STATE, DISPLAY],
+            resources: [STATE, COUNT, DISPLAY],
         },
     },
 }
 
 fn init(p: init::Peripherals) -> init::LateResources {
+    let heap_start = unsafe { &mut _sheap as *mut u32 as usize };
+    unsafe {
+        ALLOCATOR.init(heap_start, 1024)
+    }
+
     let mut flash = p.device.FLASH.constrain();
     let mut rcc = p.device.RCC.constrain();
     let mut afio = p.device.AFIO.constrain(&mut rcc.apb2);
@@ -69,7 +87,7 @@ fn init(p: init::Peripherals) -> init::LateResources {
         (scl, sda),
         &mut afio.mapr,
         Mode::Fast {
-            frequency: 200_000,
+            frequency: 400_000,
             duty_cycle: DutyCycle::Ratio1to1,
         },
         clocks,
@@ -87,6 +105,7 @@ fn init(p: init::Peripherals) -> init::LateResources {
 
     init::LateResources {
         STATE: false,
+        COUNT: 0,
         DISPLAY: display,
     }
 }
@@ -111,11 +130,10 @@ fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
 
     r.DISPLAY.clear();
 
-    match *r.STATE {
-        true => r.DISPLAY.draw(Font6x8::render_str("TRUE").translate((0, 0)).into_iter()),
-        false => r.DISPLAY.draw(Font6x8::render_str("FALSE").translate((0, 0)).into_iter()),
-    }
+    r.DISPLAY.draw(Font6x8::render_str(&format!("STATE: {}", *r.STATE)).translate((0, 0)).into_iter());
+    r.DISPLAY.draw(Font6x8::render_str(&format!("COUNT: {}", *r.COUNT)).translate((0, 12)).into_iter());
 
     r.DISPLAY.flush().unwrap();
+    *r.COUNT += 1;
     *r.STATE = !*r.STATE;
 }

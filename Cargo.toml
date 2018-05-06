@@ -32,6 +32,7 @@ codegen-units = 1
 
 [dependencies]
 cortex-m-rtfm = "0.3.2"
+alloc-cortex-m = "0.3.3"
 
 
 [dependencies.cortex-m]
