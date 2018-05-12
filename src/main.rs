@@ -1,48 +1,49 @@
+#![no_std]
 #![deny(warnings)]
+#![feature(const_fn)]
 #![feature(proc_macro)]
 #![feature(global_allocator)]
 #![feature(alloc)]
+#![feature(used)]
 #![feature(lang_items)]
-#![no_std]
 
-//extern crate alloc_cortex_m;
+extern crate alloc_cortex_m;
 extern crate cortex_m;
 extern crate cortex_m_rtfm as rtfm;
-//#[macro_use]
-//extern crate alloc;
-extern crate embedded_graphics;
+extern crate cortex_m_rtfm_macros;
 extern crate embedded_hal;
 extern crate panic_abort;
 extern crate ssd1306;
 extern crate stm32f103xx_hal as hal;
+#[macro_use]
+extern crate alloc;
+extern crate embedded_graphics;
 
-//use alloc_cortex_m::CortexMHeap;
+use alloc_cortex_m::CortexMHeap;
 use cortex_m::peripheral::syst::SystClkSource;
-use rtfm::{app, Threshold};
-
+use cortex_m_rtfm_macros::app;
 use embedded_hal::spi::{Mode, Phase, Polarity};
 use hal::delay::Delay;
 use hal::gpio::gpioa::{PA5, PA6, PA7};
 use hal::gpio::gpiob::PB1;
 use hal::gpio::{Alternate, Floating, Input, Output, PushPull};
-use hal::spi::Spi;
 use hal::prelude::*;
-use hal::stm32f103xx;
+use hal::spi::Spi;
 use hal::stm32f103xx::SPI1;
-
-//use embedded_graphics::fonts::{Font, Font6x8};
-//use embedded_graphics::prelude::*;
-//use embedded_graphics::Drawing;
-use ssd1306::mode::GraphicsMode;
+use rtfm::Threshold;
 use ssd1306::prelude::*;
 use ssd1306::Builder;
+use embedded_graphics::Drawing;
+use embedded_graphics::fonts::Font6x8;
+use embedded_graphics::fonts::Font;
+use embedded_graphics::prelude::Transform;
 
-//#[global_allocator]
-//static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
+#[global_allocator]
+static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
-//extern "C" {
-//    static mut _sheap: u32;
-//}
+extern "C" {
+    static mut _sheap: u32;
+}
 
 pub type OledDisplay = GraphicsMode<
     SpiInterface<
@@ -58,26 +59,38 @@ pub type OledDisplay = GraphicsMode<
     >,
 >;
 
+// Tasks and resources
 app! {
-    device: stm32f103xx,
+    device: hal::stm32f103xx,
 
     resources: {
+        static DISPLAY: OledDisplay;
         static STATE: bool;
         static COUNT: u64;
-        static DISPLAY: OledDisplay;
+    },
+
+    idle: {
+        resources: [
+            DISPLAY,
+            STATE,
+        ],
     },
 
     tasks: {
         SYS_TICK: {
             path: sys_tick,
-            resources: [STATE, COUNT, DISPLAY],
+            resources: [
+                DISPLAY,
+                STATE,
+                COUNT,
+            ],
         },
     },
 }
 
 fn init(p: init::Peripherals) -> init::LateResources {
-    //let heap_start = unsafe { &mut _sheap as *mut u32 as usize };
-    //unsafe { ALLOCATOR.init(heap_start, 1024) }
+    let heap_start = unsafe { &mut _sheap as *mut u32 as usize };
+    unsafe { ALLOCATOR.init(heap_start, 1024) }
 
     let mut flash = p.device.FLASH.constrain();
     let mut rcc = p.device.RCC.constrain();
@@ -114,7 +127,6 @@ fn init(p: init::Peripherals) -> init::LateResources {
 
     let mut display: GraphicsMode<_> = Builder::new().connect_spi(spi, dc).into();
 
-
     display.reset(&mut rst, &mut delay);
     display.init().unwrap();
     display.flush().unwrap();
@@ -132,7 +144,7 @@ fn init(p: init::Peripherals) -> init::LateResources {
     }
 }
 
-fn idle() -> ! {
+fn idle(_t: &mut Threshold, _r: idle::Resources) -> ! {
     loop {
         rtfm::wfi();
     }
@@ -149,19 +161,15 @@ fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
         .connect_i2c(i2c1)
         .into();
     */
-
     r.DISPLAY.clear();
 
-    match *r.STATE {
-        true => draw_square(&mut r.DISPLAY, 0, 0),
-        false => draw_square(&mut r.DISPLAY, 6, 0),
-    }
+    write_display(&mut *r.DISPLAY, *r.STATE, *r.COUNT);
 
     r.DISPLAY.flush().unwrap();
     *r.COUNT += 1;
     *r.STATE = !*r.STATE;
 }
-/*
+
 fn write_display(display: &mut OledDisplay, state: bool, count: u64) {
     display.draw(
         Font6x8::render_str(&format!("STATE: {}", state))
@@ -174,38 +182,9 @@ fn write_display(display: &mut OledDisplay, state: bool, count: u64) {
             .into_iter(),
     );
 }
-*/
 
-fn draw_square(disp: &mut OledDisplay, xoffset: u32, yoffset: u32) {
-    // Top side
-    disp.set_pixel(xoffset + 0, yoffset + 0, 1);
-    disp.set_pixel(xoffset + 1, yoffset + 0, 1);
-    disp.set_pixel(xoffset + 2, yoffset + 0, 1);
-    disp.set_pixel(xoffset + 3, yoffset + 0, 1);
-
-    // Right side
-    disp.set_pixel(xoffset + 3, yoffset + 0, 1);
-    disp.set_pixel(xoffset + 3, yoffset + 1, 1);
-    disp.set_pixel(xoffset + 3, yoffset + 2, 1);
-    disp.set_pixel(xoffset + 3, yoffset + 3, 1);
-
-    // Bottom side
-    disp.set_pixel(xoffset + 0, yoffset + 3, 1);
-    disp.set_pixel(xoffset + 1, yoffset + 3, 1);
-    disp.set_pixel(xoffset + 2, yoffset + 3, 1);
-    disp.set_pixel(xoffset + 3, yoffset + 3, 1);
-
-    // Left side
-    disp.set_pixel(xoffset + 0, yoffset + 0, 1);
-    disp.set_pixel(xoffset + 0, yoffset + 1, 1);
-    disp.set_pixel(xoffset + 0, yoffset + 2, 1);
-    disp.set_pixel(xoffset + 0, yoffset + 3, 1);
-}
-
-/*
 #[lang = "oom"]
 #[no_mangle]
 pub fn rust_oom() -> ! {
-    loop { }
+    loop {}
 }
-*/
