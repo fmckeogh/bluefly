@@ -8,8 +8,8 @@
 
 ```make``` builds the project, creates a binary and flashes it using st-flash.
 
-
 ## Features
+* No connection issues ever
 * Full telemetry and configuration of VESC from remote
 * 100 hours per charge (acheiveable with single LG MJ1, final design aims for 2)
 * Comfortable - long journeys should not tire the user's hand
@@ -35,6 +35,14 @@
 - [ ] PCB design of both remote and receiver
 - [ ] Design enclosure, thumb wheel, maybe forefinger hole?
 
+
+## Contributing
+
+Issues and PRs very welcome, nothing is too small.
+
+All PRs must pass all checks, have run `cargo fmt` and `cargo clippy`.
+
+Two branches, `development` and `stable`. PRs get merged into `development`, and after a few weeks of real world use by multiple people can be merged into `stable` where it becomes a new release. This is all likely to change because I have no idea what I'm doing.
 
 ## License
 Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
