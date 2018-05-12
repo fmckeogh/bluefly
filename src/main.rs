@@ -11,7 +11,6 @@ extern crate alloc_cortex_m;
 extern crate cortex_m;
 extern crate cortex_m_rtfm as rtfm;
 extern crate cortex_m_rtfm_macros;
-extern crate embedded_hal;
 extern crate panic_abort;
 extern crate ssd1306;
 extern crate stm32f103xx_hal as hal;
@@ -22,13 +21,12 @@ extern crate embedded_graphics;
 use alloc_cortex_m::CortexMHeap;
 use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m_rtfm_macros::app;
-use embedded_hal::spi::{Mode, Phase, Polarity};
 use hal::delay::Delay;
 use hal::gpio::gpioa::{PA5, PA6, PA7};
 use hal::gpio::gpiob::PB1;
 use hal::gpio::{Alternate, Floating, Input, Output, PushPull};
 use hal::prelude::*;
-use hal::spi::Spi;
+use hal::spi::{Spi, Mode, Phase, Polarity};
 use hal::stm32f103xx::SPI1;
 use rtfm::Threshold;
 use ssd1306::prelude::*;
@@ -125,7 +123,10 @@ fn init(p: init::Peripherals) -> init::LateResources {
         &mut rcc.apb2,
     );
 
-    let mut display: GraphicsMode<_> = Builder::new().connect_spi(spi, dc).into();
+    let mut display: GraphicsMode<_> = Builder::new()
+        .with_size(DisplaySize::Display128x64)
+        .connect_spi(spi, dc)
+        .into();
 
     display.reset(&mut rst, &mut delay);
     display.init().unwrap();
@@ -133,7 +134,7 @@ fn init(p: init::Peripherals) -> init::LateResources {
 
     let mut syst = delay.free();
     syst.set_clock_source(SystClkSource::Core);
-    syst.set_reload(8_000_000);
+    syst.set_reload(1_000_000);
     syst.enable_interrupt();
     syst.enable_counter();
 
@@ -151,16 +152,6 @@ fn idle(_t: &mut Threshold, _r: idle::Resources) -> ! {
 }
 
 fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
-    /*
-    let state: &'static mut bool = r.STATE;
-    let mut display: &'static mut OledDisplay = r.DISPLAY;
-
-    let mut display: GraphicsMode<_> = Builder::new()
-        .with_size(DisplaySize::Display128x32)
-        .with_i2c_addr(0x3C)
-        .connect_i2c(i2c1)
-        .into();
-    */
     r.DISPLAY.clear();
 
     write_display(&mut *r.DISPLAY, *r.STATE, *r.COUNT);
@@ -186,5 +177,5 @@ fn write_display(display: &mut OledDisplay, state: bool, count: u64) {
 #[lang = "oom"]
 #[no_mangle]
 pub fn rust_oom() -> ! {
-    loop {}
+    panic!()
 }
