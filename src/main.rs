@@ -23,11 +23,11 @@ use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m_rtfm_macros::app;
 use hal::delay::Delay;
 use hal::prelude::*;
-use hal::spi::{Spi, Mode, Phase, Polarity};
+use hal::spi::{Mode, Phase, Polarity, Spi};
 use rtfm::Threshold;
+use ssd1306::mode::GraphicsMode;
 use ssd1306::prelude::*;
 use ssd1306::Builder;
-use ssd1306::mode::GraphicsMode;
 
 mod display;
 use display::*;
@@ -38,7 +38,6 @@ static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 extern "C" {
     static mut _sheap: u32;
 }
-
 
 // Tasks and resources
 app! {
@@ -60,6 +59,7 @@ app! {
     },
 }
 
+// Initalisation routine
 fn init(mut p: init::Peripherals) -> init::LateResources {
     let heap_start = unsafe { &mut _sheap as *mut u32 as usize };
     unsafe { ALLOCATOR.init(heap_start, 1024) }
@@ -126,6 +126,7 @@ fn idle() -> ! {
     }
 }
 
+// Interrupt routine to read sensors and send data to VESC
 fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
     let displaydata: DisplayData = DisplayData {
         local_bat: 98,
@@ -149,6 +150,10 @@ fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
 
     *r.COUNT += 1;
 }
+
+
+// Interrupt to receive telemetry packets and display
+
 
 #[lang = "oom"]
 #[no_mangle]
