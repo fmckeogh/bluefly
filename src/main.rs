@@ -129,7 +129,7 @@ fn idle() -> ! {
 // Interrupt routine to read sensors and send data to VESC
 fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
     let displaydata: DisplayData = DisplayData {
-        local_bat: 98,
+        local_bat: (*r.COUNT) as u8 ,
         remote_bat: 43,
         current: 51.12,
         mode: 1,

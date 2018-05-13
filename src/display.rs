@@ -50,9 +50,23 @@ pub fn write_display(disp: &mut OledDisplay, data: DisplayData) {
 
     disp.draw(Font6x8::render_str("TEST").translate((0, 20)).into_iter());
 
-    disp.draw(Rect::new((108, 0), (126, 7), 1u8).into_iter());
+
+    // Remote battery
+    disp.draw(Rect::new((111, 0), (126, 6), 1u8).into_iter());
     disp.set_pixel(127, 2, 1);
     disp.set_pixel(127, 3, 1);
     disp.set_pixel(127, 4, 1);
-    disp.set_pixel(127, 5, 1);
+
+
+    let batt;
+    if data.local_bat >= 100 {
+        batt = 125;
+    } else {
+        batt = ((0.12f32 * data.local_bat as f32) as u32 + 113) as u8;
+    }
+    for x in 113..batt {
+            disp.set_pixel(x.into(), 2, 1);
+            disp.set_pixel(x.into(), 3, 1);
+            disp.set_pixel(x.into(), 4, 1);
+    }
 }
