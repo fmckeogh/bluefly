@@ -46,31 +46,40 @@ app! {
     resources: {
         static DISPLAY: OledDisplay;
         static COUNT: u64;
+        static EXTI: hal::stm32f103xx::EXTI;
     },
 
     tasks: {
         SYS_TICK: {
             path: sys_tick,
+            priority: 2,
             resources: [
                 DISPLAY,
                 COUNT,
             ],
         },
+
+        EXTI0: {
+            path: exti0,
+            priority: 1,
+            resources: [
+                COUNT,
+                EXTI,
+            ],
+        }
     },
 }
 
 // Initalisation routine
-fn init(mut p: init::Peripherals) -> init::LateResources {
+fn init(p: init::Peripherals) -> init::LateResources {
     let heap_start = unsafe { &mut _sheap as *mut u32 as usize };
     unsafe { ALLOCATOR.init(heap_start, 1024) }
 
     let mut flash = p.device.FLASH.constrain();
     let mut rcc = p.device.RCC.constrain();
-
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
-
+    let mut delay = Delay::new(p.core.SYST, clocks);
     let mut afio = p.device.AFIO.constrain(&mut rcc.apb2);
-
     let mut gpioa = p.device.GPIOA.split(&mut rcc.apb2);
     let mut gpiob = p.device.GPIOB.split(&mut rcc.apb2);
 
@@ -80,8 +89,6 @@ fn init(mut p: init::Peripherals) -> init::LateResources {
 
     let mut rst = gpiob.pb0.into_push_pull_output(&mut gpiob.crl);
     let dc = gpiob.pb1.into_push_pull_output(&mut gpiob.crl);
-
-    let mut delay = Delay::new(p.core.SYST, clocks);
 
     // SPI1
     let spi = Spi::spi1(
@@ -101,7 +108,6 @@ fn init(mut p: init::Peripherals) -> init::LateResources {
         .with_size(DisplaySize::Display128x64)
         .connect_spi(spi, dc)
         .into();
-
     display.reset(&mut rst, &mut delay);
     display.init().unwrap();
     display.flush().unwrap();
@@ -112,11 +118,13 @@ fn init(mut p: init::Peripherals) -> init::LateResources {
     syst.enable_interrupt();
     syst.enable_counter();
 
-    p.core.DWT.enable_cycle_counter();
+    p.device.EXTI.imr.write(|w| w.mr9().set_bit()); // unmask the interrupt (EXTI)
+    p.device.EXTI.rtsr.write(|w| w.tr0().set_bit()); // trigger interrupt on falling edge
 
     init::LateResources {
         DISPLAY: display,
         COUNT: 0,
+        EXTI: p.device.EXTI,
     }
 }
 
@@ -151,6 +159,16 @@ fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
 }
 
 // Interrupt to receive telemetry packets and display
+fn exti0(_t: &mut Threshold, mut r: EXTI0::Resources) {
+    use rtfm::Resource;
+    r.COUNT.claim_mut(_t, |count, _t| {
+        *count = 0;
+    });
+
+    // clear the pending interrupt flag
+    r.EXTI.pr.write(|w| w.pr0().set_bit());
+}
+
 
 #[lang = "oom"]
 #[no_mangle]
