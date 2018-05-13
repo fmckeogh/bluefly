@@ -24,13 +24,18 @@ cortex-m-rtfm = "0.3.2"
 cortex-m-rtfm-macros = "0.3.1"
 panic-abort = "0.1.1"
 alloc-cortex-m = "0.3.4"
-embedded-graphics = "0.1.1"
 
 
 #TODO: Replace these with crates.io dependencies when available
 [dependencies.cortex-m-rt]
 git = "https://github.com/japaric/cortex-m-rt"
 rev = "1865c7a"
+
+[dependencies.embedded-graphics]
+#git = "https://github.com/jamwaffles/embedded-graphics.git"
+#rev = "93b16fd"
+#tag = "0.1.1"
+version = "0.1.1"
 
 [dependencies.ssd1306]
 git = "https://github.com/jamwaffles/ssd1306.git"

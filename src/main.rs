@@ -22,19 +22,15 @@ use alloc_cortex_m::CortexMHeap;
 use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m_rtfm_macros::app;
 use hal::delay::Delay;
-use hal::gpio::gpioa::{PA5, PA6, PA7};
-use hal::gpio::gpiob::PB1;
-use hal::gpio::{Alternate, Floating, Input, Output, PushPull};
 use hal::prelude::*;
 use hal::spi::{Spi, Mode, Phase, Polarity};
-use hal::stm32f103xx::SPI1;
 use rtfm::Threshold;
 use ssd1306::prelude::*;
 use ssd1306::Builder;
-use embedded_graphics::Drawing;
-use embedded_graphics::fonts::Font6x8;
-use embedded_graphics::fonts::Font;
-use embedded_graphics::prelude::Transform;
+use ssd1306::mode::GraphicsMode;
+
+mod display;
+use display::*;
 
 #[global_allocator]
 static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
@@ -43,19 +39,6 @@ extern "C" {
     static mut _sheap: u32;
 }
 
-pub type OledDisplay = GraphicsMode<
-    SpiInterface<
-        Spi<
-            SPI1,
-            (
-                PA5<Alternate<PushPull>>,
-                PA6<Input<Floating>>,
-                PA7<Alternate<PushPull>>,
-            ),
-        >,
-        PB1<Output<PushPull>>, // B1 -> DC
-    >,
->;
 
 // Tasks and resources
 app! {
@@ -63,15 +46,7 @@ app! {
 
     resources: {
         static DISPLAY: OledDisplay;
-        static STATE: bool;
         static COUNT: u64;
-    },
-
-    idle: {
-        resources: [
-            DISPLAY,
-            STATE,
-        ],
     },
 
     tasks: {
@@ -79,7 +54,6 @@ app! {
             path: sys_tick,
             resources: [
                 DISPLAY,
-                STATE,
                 COUNT,
             ],
         },
@@ -142,45 +116,38 @@ fn init(mut p: init::Peripherals) -> init::LateResources {
 
     init::LateResources {
         DISPLAY: display,
-        STATE: false,
         COUNT: 0,
     }
 }
 
-fn idle(_t: &mut Threshold, _r: idle::Resources) -> ! {
+fn idle() -> ! {
     loop {
         rtfm::wfi();
     }
 }
 
 fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
-    // ~36 ms from here
+    let displaydata: DisplayData = DisplayData {
+        local_bat: 98,
+        remote_bat: 43,
+        current: 51.12,
+        mode: 1,
+
+        // Distance
+        speed: 4.7341,
+        distance_travelled: 6144,
+        distance_remaining: 1236,
+
+        // Signal
+        signal_strength: 78,
+        packet_loss: *r.COUNT as u8,
+    };
 
     r.DISPLAY.clear();
-    write_display(&mut *r.DISPLAY, *r.STATE, *r.COUNT);
+    write_display(&mut *r.DISPLAY, displaydata);
     r.DISPLAY.flush().unwrap();
 
-    // to here
     *r.COUNT += 1;
-    *r.STATE = !*r.STATE;
-}
-
-fn write_display(display: &mut OledDisplay, state: bool, count: u64) {
-    display.draw(
-        Font6x8::render_str(&format!("STATE: {}", state))
-            .translate((0, 0))
-            .into_iter(),
-    );
-    display.draw(
-        Font6x8::render_str(&format!("COUNT: {}", count))
-            .translate((0, 12))
-            .into_iter(),
-    );
-    display.draw(
-        Font6x8::render_str(&format!("TEST"))
-            .translate((0, 32))
-            .into_iter(),
-    );
 }
 
 #[lang = "oom"]
