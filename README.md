@@ -45,5 +45,5 @@ All PRs must pass all checks, have run `cargo fmt` and `cargo clippy`.
 Two branches, `development` and `stable`. PRs get merged into `development`, and after a few weeks of real world use by multiple people can be merged into `stable` where it becomes a new release. This is all likely to change because I have no idea what I'm doing.
 
 ## License
-Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
-  http://www.apache.org/licenses/LICENSE-2.0)
+GNU Affero General Public License v3.0([LICENSE](LICENSE) or
+  https://www.gnu.org/licenses/agpl-3.0.txt)
