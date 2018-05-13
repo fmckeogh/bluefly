@@ -108,7 +108,7 @@ fn init(mut p: init::Peripherals) -> init::LateResources {
 
     let mut syst = delay.free();
     syst.set_clock_source(SystClkSource::Core);
-    syst.set_reload(1_000_000);
+    syst.set_reload(250_000);
     syst.enable_interrupt();
     syst.enable_counter();
 
@@ -140,8 +140,7 @@ fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
         distance_remaining: 1236,
 
         // Signal
-        signal_strength: 78,
-        packet_loss: *r.COUNT as u8,
+        signal_strength: *r.COUNT as u8,
     };
 
     r.DISPLAY.clear();

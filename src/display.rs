@@ -38,17 +38,16 @@ pub struct DisplayData {
 
     // Signal
     pub signal_strength: u8, // %
-    pub packet_loss: u8,     // %
 }
 
 pub fn write_display(disp: &mut OledDisplay, data: DisplayData) {
     disp.draw(
-        Font6x8::render_str(&format!("{}%", data.packet_loss))
-            .translate((0, 0))
+        Font6x8::render_str(&format!("{}%", data.signal_strength))
+            .translate((0, 40))
             .into_iter(),
     );
 
-    disp.draw(Font6x8::render_str("TEST").translate((0, 20)).into_iter());
+    disp.draw(Font6x8::render_str("TEST").translate((0, 50)).into_iter());
 
 
     // Remote battery
@@ -56,8 +55,6 @@ pub fn write_display(disp: &mut OledDisplay, data: DisplayData) {
     disp.set_pixel(127, 2, 1);
     disp.set_pixel(127, 3, 1);
     disp.set_pixel(127, 4, 1);
-
-
     let batt;
     if data.local_bat >= 100 {
         batt = 125;
@@ -68,5 +65,43 @@ pub fn write_display(disp: &mut OledDisplay, data: DisplayData) {
             disp.set_pixel(x.into(), 2, 1);
             disp.set_pixel(x.into(), 3, 1);
             disp.set_pixel(x.into(), 4, 1);
+    }
+
+    // Signal strength (TIDY UP AND MAKE IT LOOK BETTER)
+    if data.signal_strength > 20 {
+        for x in 0..2 {
+            for y in 6..7 {
+                disp.set_pixel(x, y, 1);
+            }
+        }
+    }
+    if data.signal_strength > 40 {
+        for x in 3..5 {
+            for y in 4..7 {
+                disp.set_pixel(x, y, 1);
+            }
+        }
+    }
+    if data.signal_strength > 60 {
+        for x in 6..8 {
+            for y in 2..7 {
+                disp.set_pixel(x, y, 1);
+            }
+        }
+    }
+    if data.signal_strength >= 80 {
+        for x in 9..11 {
+            for y in 0..7 {
+                disp.set_pixel(x, y, 1);
+            }
+        }
+    }
+    if data.signal_strength <= 20 {
+        // Make smaller font when available
+        disp.draw(
+            Font6x8::render_str("NO SIGNAL")
+                .translate((0, 0))
+                .into_iter(),
+        );
     }
 }
