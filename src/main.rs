@@ -86,7 +86,7 @@ app! {
     },
 }
 
-fn init(p: init::Peripherals) -> init::LateResources {
+fn init(mut p: init::Peripherals) -> init::LateResources {
     let heap_start = unsafe { &mut _sheap as *mut u32 as usize };
     unsafe { ALLOCATOR.init(heap_start, 1024) }
 
@@ -138,6 +138,8 @@ fn init(p: init::Peripherals) -> init::LateResources {
     syst.enable_interrupt();
     syst.enable_counter();
 
+    p.core.DWT.enable_cycle_counter();
+
     init::LateResources {
         DISPLAY: display,
         STATE: false,
@@ -152,11 +154,13 @@ fn idle(_t: &mut Threshold, _r: idle::Resources) -> ! {
 }
 
 fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
+    // ~36 ms from here
+
     r.DISPLAY.clear();
-
     write_display(&mut *r.DISPLAY, *r.STATE, *r.COUNT);
-
     r.DISPLAY.flush().unwrap();
+
+    // to here
     *r.COUNT += 1;
     *r.STATE = !*r.STATE;
 }
@@ -170,6 +174,11 @@ fn write_display(display: &mut OledDisplay, state: bool, count: u64) {
     display.draw(
         Font6x8::render_str(&format!("COUNT: {}", count))
             .translate((0, 12))
+            .into_iter(),
+    );
+    display.draw(
+        Font6x8::render_str(&format!("TEST"))
+            .translate((0, 32))
             .into_iter(),
     );
 }
