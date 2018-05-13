@@ -1,4 +1,4 @@
-#  mremote
+#  μremote
 > Encrypted electric longboard remote with telemetry and lighting
 
 ## Building
