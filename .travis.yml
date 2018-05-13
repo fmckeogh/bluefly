@@ -2,17 +2,17 @@ language: rust
 
 matrix:
   include:
-    - env: TARGET_BUILD=thumbv6m-none-eabi
-      rust: nightly-2018-05-10
-      addons:
-        apt:
-          sources:
-            - debian-sid
-          packages:
-            - binutils-arm-none-eabi
+    #- env: TARGET_BUILD=thumbv6m-none-eabi
+    #  rust: nightly-2018-05-10
+    #  addons:
+    #    apt:
+    #      sources:
+    #        - debian-sid
+    #      packages:
+    #        - binutils-arm-none-eabi
 
     - env: TARGET_BUILD=thumbv7m-none-eabi
-      rust: nightly-2018-05-10
+      rust: nightly
       addons:
         apt:
           sources:
@@ -20,23 +20,23 @@ matrix:
           packages:
             - binutils-arm-none-eabi
 
-    - env: TARGET_BUILD=thumbv7em-none-eabi
-      rust: nightly-2018-05-10
-      addons:
-        apt:
-          sources:
-            - debian-sid
-          packages:
-            - binutils-arm-none-eabi
+    #- env: TARGET_BUILD=thumbv7em-none-eabi
+    #  rust: nightly-2018-05-10
+    #  addons:
+    #    apt:
+    #      sources:
+    #        - debian-sid
+    #      packages:
+    #        - binutils-arm-none-eabi
 
-    - env: TARGET_BUILD=thumbv7em-none-eabihf
-      rust: nightly-2018-05-10
-      addons:
-        apt:
-          sources:
-            - debian-sid
-          packages:
-            - binutils-arm-none-eabi
+    #- env: TARGET_BUILD=thumbv7em-none-eabihf
+    #  rust: nightly-2018-05-10
+    #  addons:
+    #    apt:
+    #      sources:
+    #        - debian-sid
+    #      packages:
+    #        - binutils-arm-none-eabi
 
 before_install: set -e
 
