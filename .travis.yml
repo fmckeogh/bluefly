@@ -19,6 +19,7 @@ matrix:
             - debian-sid
           packages:
             - binutils-arm-none-eabi
+            - b2sum
 
     #- env: TARGET_BUILD=thumbv7em-none-eabi
     #  rust: nightly-2018-05-10
@@ -44,8 +45,8 @@ install:
   - rustup target add $TARGET_BUILD
 
 script:
-  - cargo build --target $TARGET_BUILD
-  - cargo build --target $TARGET_BUILD --release
+#  - cargo build --target $TARGET_BUILD
+  - make build
 
 after_script: set +e
 
