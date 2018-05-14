@@ -6,6 +6,7 @@
 #![feature(alloc)]
 #![feature(used)]
 #![feature(lang_items)]
+#![feature(extern_prelude)]
 
 extern crate alloc_cortex_m;
 extern crate cortex_m;
@@ -21,6 +22,7 @@ extern crate embedded_graphics;
 use alloc_cortex_m::CortexMHeap;
 use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m_rtfm_macros::app;
+use hal::stm32f103xx::interrupt::Interrupt;
 use hal::delay::Delay;
 use hal::prelude::*;
 use hal::spi::{Mode, Phase, Polarity, Spi};
@@ -71,7 +73,7 @@ app! {
 }
 
 // Initalisation routine
-fn init(p: init::Peripherals) -> init::LateResources {
+fn init(mut p: init::Peripherals) -> init::LateResources {
     let heap_start = unsafe { &mut _sheap as *mut u32 as usize };
     unsafe { ALLOCATOR.init(heap_start, 1024) }
 
@@ -79,6 +81,9 @@ fn init(p: init::Peripherals) -> init::LateResources {
     let mut rcc = p.device.RCC.constrain();
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
     let mut delay = Delay::new(p.core.SYST, clocks);
+
+    p.device.AFIO.exticr1.write(|w| unsafe { w.exti0().bits(0) });
+
     let mut afio = p.device.AFIO.constrain(&mut rcc.apb2);
     let mut gpioa = p.device.GPIOA.split(&mut rcc.apb2);
     let mut gpiob = p.device.GPIOB.split(&mut rcc.apb2);
@@ -87,7 +92,7 @@ fn init(p: init::Peripherals) -> init::LateResources {
     let miso = gpioa.pa6;
     let mosi = gpioa.pa7.into_alternate_push_pull(&mut gpioa.crl);
 
-    let mut rst = gpiob.pb0.into_push_pull_output(&mut gpiob.crl);
+    let mut rst = gpiob.pb12.into_push_pull_output(&mut gpiob.crh);
     let dc = gpiob.pb1.into_push_pull_output(&mut gpiob.crl);
 
     // SPI1
@@ -104,6 +109,7 @@ fn init(p: init::Peripherals) -> init::LateResources {
         &mut rcc.apb2,
     );
 
+    // Init display
     let mut display: GraphicsMode<_> = Builder::new()
         .with_size(DisplaySize::Display128x64)
         .connect_spi(spi, dc)
@@ -112,14 +118,25 @@ fn init(p: init::Peripherals) -> init::LateResources {
     display.init().unwrap();
     display.flush().unwrap();
 
+    // Set up timer interrupt
     let mut syst = delay.free();
     syst.set_clock_source(SystClkSource::Core);
     syst.set_reload(250_000);
     syst.enable_interrupt();
     syst.enable_counter();
 
-    p.device.EXTI.imr.write(|w| w.mr9().set_bit()); // unmask the interrupt (EXTI)
+    // Set up interrupt on PA0
+    let _int0 = gpioa.pa0.into_floating_input(&mut gpioa.crl);
+    unsafe {
+        p.core.NVIC.set_priority(stm32f103xx_hal::stm32f103xx::interrupt::Interrupt::EXTI0, 1);
+    }
+    p.core.NVIC.enable(
+        stm32f103xx_hal::stm32f103xx::interrupt::Interrupt::EXTI0,
+    );
+    p.device.EXTI.imr.write(|w| w.mr0().set_bit()); // unmask the interrupt (EXTI)
+    p.device.EXTI.emr.write(|w| w.mr0().set_bit());
     p.device.EXTI.rtsr.write(|w| w.tr0().set_bit()); // trigger interrupt on falling edge
+    rtfm::set_pending(Interrupt::EXTI0);
 
     init::LateResources {
         DISPLAY: display,
@@ -136,6 +153,7 @@ fn idle() -> ! {
 
 // Interrupt routine to read sensors and send data to VESC
 fn sys_tick(_t: &mut Threshold, mut r: SYS_TICK::Resources) {
+
     let displaydata: DisplayData = DisplayData {
         local_bat: (*r.COUNT) as u8,
         remote_bat: 43,
@@ -166,7 +184,7 @@ fn exti0(_t: &mut Threshold, mut r: EXTI0::Resources) {
     });
 
     // clear the pending interrupt flag
-    r.EXTI.pr.write(|w| w.pr0().set_bit());
+    r.EXTI.pr.write(|w| w.pr9().set_bit());
 }
 
 
