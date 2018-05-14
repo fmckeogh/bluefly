@@ -10,19 +10,19 @@ repository = "https://github.com/chocol4te/mremote"
 
 
 [profile.release]
-opt-level = 1 # Only 0 and 1 work
+opt-level = 1 # Only 0 and 1 work: need to fix
 debug = true # Disabling *increases* size
 rpath = false
 lto = true
 debug-assertions = true
-codegen-units = 12 # Not ideal but didn't break build
+codegen-units = 16 # Not ideal but didn't break build
 panic = 'abort'
 incremental = false
 overflow-checks = true
 
 [profile.dev]
 incremental = false
-codegen-units = 1
+codegen-units = 16
 
 [dependencies]
 cortex-m = "0.4.3"
