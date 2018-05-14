@@ -10,9 +10,15 @@ repository = "https://github.com/chocol4te/mremote"
 
 
 [profile.release]
-#opt-level = "s"
+opt-level = 1 # Only 0 and 1 work
+debug = true # Disabling *increases* size
+rpath = false
 lto = true
-debug = true
+debug-assertions = true
+codegen-units = 12 # Not ideal but didn't break build
+panic = 'abort'
+incremental = false
+overflow-checks = true
 
 [profile.dev]
 incremental = false
