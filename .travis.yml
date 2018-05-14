@@ -19,7 +19,7 @@ matrix:
             - debian-sid
           packages:
             - binutils-arm-none-eabi
-            - b2sum
+            - coreutils
 
     #- env: TARGET_BUILD=thumbv7em-none-eabi
     #  rust: nightly-2018-05-10
