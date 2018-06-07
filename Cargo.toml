@@ -28,7 +28,7 @@ codegen-units = 16
 cortex-m = "0.4.3"
 cortex-m-rtfm = "0.3.2"
 cortex-m-rtfm-macros = "0.3.1"
-panic-abort = "0.1.1"
+panic-abort = "0.2.0"
 alloc-cortex-m = "0.3.4"
 
 
