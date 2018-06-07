@@ -25,7 +25,7 @@ incremental = false
 codegen-units = 16
 
 [dependencies]
-cortex-m = "0.4.3"
+cortex-m = "0.5.2"
 cortex-m-rtfm = "0.3.2"
 cortex-m-rtfm-macros = "0.3.1"
 panic-abort = "0.1.1"
