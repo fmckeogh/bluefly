@@ -10,4 +10,8 @@ build:
 	#b2sum -l 128 target/thumbv7m-none-eabi/release/mremote.bin
 
 flash:
-	st-flash --reset write target/thumbv7m-none-eabi/release/mremote.bin 0x08000000
+	st-flash --reset write target/thumbv7m-none-eabi/release/mremote.bin 0x08002000
+
+debug:
+	cargo build --release
+	arm-none-eabi-gdb target/thumbv7m-none-eabi/release/mremote
