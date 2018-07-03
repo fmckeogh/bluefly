@@ -25,11 +25,11 @@ incremental = false
 codegen-units = 16
 
 [dependencies]
-cortex-m = "0.4.3"
+cortex-m = "0.5.2"
 cortex-m-rtfm = "0.3.2"
 cortex-m-rtfm-macros = "0.3.1"
-panic-abort = "0.1.1"
-alloc-cortex-m = "0.3.4"
+panic-abort = "0.2.0"
+alloc-cortex-m = "0.3.5"
 
 
 #TODO: Replace these with crates.io dependencies when available
@@ -50,4 +50,4 @@ rev = "a6e1661"
 [dependencies.stm32f103xx-hal]
 git = "https://github.com/japaric/stm32f103xx-hal.git"
 features = ["rt"]
-rev = "330c904"
+rev = "687dc4b"
