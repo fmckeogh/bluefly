@@ -1,0 +1,7 @@
+[submodule "dapboot"]
+	path = dapboot
+	url = https://github.com/devanlai/dapboot.git
+
+[submodule "libopencm3"]
+	path = dapboot/libopencm3
+	url = https://github.com/devanlai/libopencm3.git
