@@ -1,43 +1,14 @@
 language: rust
+rust: nightly
+env: TARGET_BUILD=thumbv7m-none-eabi
 
-matrix:
-  include:
-    #- env: TARGET_BUILD=thumbv6m-none-eabi
-    #  rust: nightly-2018-05-10
-    #  addons:
-    #    apt:
-    #      sources:
-    #        - debian-sid
-    #      packages:
-    #        - binutils-arm-none-eabi
-
-    - env: TARGET_BUILD=thumbv7m-none-eabi
-      rust: nightly
-      addons:
-        apt:
-          sources:
-            - debian-sid
-          packages:
-            - binutils-arm-none-eabi
-            - coreutils
-
-    #- env: TARGET_BUILD=thumbv7em-none-eabi
-    #  rust: nightly-2018-05-10
-    #  addons:
-    #    apt:
-    #      sources:
-    #        - debian-sid
-    #      packages:
-    #        - binutils-arm-none-eabi
-
-    #- env: TARGET_BUILD=thumbv7em-none-eabihf
-    #  rust: nightly-2018-05-10
-    #  addons:
-    #    apt:
-    #      sources:
-    #        - debian-sid
-    #      packages:
-    #        - binutils-arm-none-eabi
+addons:
+  apt:
+    sources:
+      - debian-sid
+    packages:
+      - binutils-arm-none-eabi
+      - coreutils
 
 before_install: set -e
 
@@ -45,15 +16,16 @@ install:
   - rustup target add $TARGET_BUILD
 
 script:
-#  - cargo build --target $TARGET_BUILD
-  - make build
+  - cargo fmt --all -- --check
+  - cargo check --target $TARGET_BUILD
+
+#  - make build
 
 after_script: set +e
 
 cache: cargo
 
 before_cache:
-  # Travis can't cache files that are not readable by "others"
   - chmod -R a+r $HOME/.cargo
 
 notifications:

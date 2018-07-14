@@ -8,7 +8,7 @@
 
 ```make``` builds the project, creates a binary and flashes it using st-flash.
 
-## Features
+## Aims
 * No connection issues ever
 * Full telemetry and configuration of VESC from remote
 * 100 hours per charge (acheiveable with single LG MJ1, final design aims for 2)
@@ -25,7 +25,7 @@
 ### Software 
 - [ ] Create telemetry display
 - [ ] Get radios working (packet abstraction?)
-- [x] Implement RTFM
+- [ ] Implement RTFM
 - [ ] Configuartion menu for VESC
 - [ ] VESC firmware update from remote
 - [ ] Customisation of screen
