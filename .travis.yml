@@ -2,17 +2,12 @@ language: rust
 rust: nightly
 env: TARGET_BUILD=thumbv7m-none-eabi
 
-apt:
-  sources:
-    - debian-sid
-  packages:
-    - binutils-arm-none-eabi
-    - gcc-arm-none-eabi
-    - coreutils
-
 before_install: set -e
 
 install:
+  - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
+  - sudo apt-get update
+  - sudo apt-get install -y gcc-arm-embedded
   - rustup target add $TARGET_BUILD
   - rustup component add rustfmt-preview
 
