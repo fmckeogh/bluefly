@@ -8,7 +8,7 @@
 
 ```make``` builds the project, creates a binary and flashes it using st-flash.
 
-## Features
+## Aims
 * No connection issues ever
 * Full telemetry and configuration of VESC from remote
 * 100 hours per charge (acheiveable with single LG MJ1, final design aims for 2)
@@ -22,10 +22,10 @@
 * SS49E hall effect sensor (lying around on my desk)
 
 ## TODO
-### Software 
+### Software
 - [ ] Create telemetry display
 - [ ] Get radios working (packet abstraction?)
-- [x] Implement RTFM
+- [ ] Implement RTFM
 - [ ] Configuartion menu for VESC
 - [ ] VESC firmware update from remote
 - [ ] Customisation of screen
@@ -41,8 +41,6 @@
 Issues and PRs very welcome, nothing is too small.
 
 All PRs must pass all checks, have run `cargo fmt` and `cargo clippy`.
-
-Two branches, `development` and `stable`. PRs get merged into `development`, and after a few weeks of real world use by multiple people can be merged into `stable` where it becomes a new release. This is all likely to change because I have no idea what I'm doing.
 
 ## License
 GNU Affero General Public License v3.0([LICENSE](LICENSE) or
