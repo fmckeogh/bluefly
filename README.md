@@ -22,7 +22,7 @@
 * SS49E hall effect sensor (lying around on my desk)
 
 ## TODO
-### Software 
+### Software
 - [ ] Create telemetry display
 - [ ] Get radios working (packet abstraction?)
 - [ ] Implement RTFM

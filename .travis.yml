@@ -2,14 +2,13 @@ language: rust
 rust: nightly
 env: TARGET_BUILD=thumbv7m-none-eabi
 
-addons:
-  apt:
-    sources:
-      - debian-sid
-    packages:
-      - binutils-arm-none-eabi
-      - arm-none-eabi-gcc
-      - coreutils
+apt:
+  sources:
+    - debian-sid
+  packages:
+    - binutils-arm-none-eabi
+    - gcc-arm-none-eabi
+    - coreutils
 
 before_install: set -e
 
@@ -20,8 +19,6 @@ install:
 script:
   - cargo fmt --all -- --check
   - cargo check --target $TARGET_BUILD
-
-#  - make build
 
 after_script: set +e
 
