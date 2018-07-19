@@ -21,10 +21,7 @@ extern crate stm32f103xx_hal as hal;
 
 use alloc_cortex_m::CortexMHeap;
 use byteorder::{ByteOrder, LittleEndian};
-use cc1101::{
-    config, status::Register, AddressFilter, Cc1101, Command, Modulation, PacketLength, RadioMode,
-    SyncMode,
-};
+use cc1101::{config, Cc1101, Command};
 use embedded_graphics::fonts::Font6x8;
 use embedded_graphics::prelude::*;
 use embedded_hal::spi::{Mode, Phase, Polarity};
@@ -72,9 +69,9 @@ fn main() -> ! {
     let sck1 = gpio_a.pa5.into_alternate_push_pull(&mut gpio_a.crl);
     let miso1 = gpio_a.pa6;
     let mosi1 = gpio_a.pa7.into_alternate_push_pull(&mut gpio_a.crl);
-    let mut cs1 = gpio_a.pa4.into_push_pull_output(&mut gpio_a.crl);
+    let cs1 = gpio_a.pa4.into_push_pull_output(&mut gpio_a.crl);
 
-    let mut spi1 = Spi::spi1(
+    let spi1 = Spi::spi1(
         dp.SPI1,
         (sck1, miso1, mosi1),
         &mut afio.mapr,
@@ -91,7 +88,9 @@ fn main() -> ! {
     radio.preset_msk_500kb().unwrap();
     radio.set_frequency(915_000_000).unwrap();
     radio.set_power_level(10).unwrap();
-    radio.write_register(config::Register::PKTCTRL1, 0b_0000_1110);
+    radio
+        .write_register(config::Register::PKTCTRL1, 0b_0000_1110)
+        .unwrap();
     radio.write_strobe(Command::SFRX).unwrap();
 
     // DISPLAY
@@ -135,19 +134,25 @@ fn main() -> ! {
         let sensor_val: u32 = dp.ADC1.dr.read().data().bits().into();
         let sensor_pcnt: u8 = ((sensor_val * 100) / 4096) as u8;
 
+        if sensor_pcnt > 50 {
+            led.set_low();
+        } else {
+            led.set_high();
+        }
+
         let mut hasher: Crc32 = Default::default();
         hasher.write_u8(sensor_pcnt);
         let mut hash: [u8; 4] = [0; 4];
         LittleEndian::write_u32(&mut hash, hasher.finish() as u32);
+
+        let mut packet = [0x01, 0x02, sensor_pcnt, hash[0]];
+        radio.transmit(&mut packet).unwrap();
 
         display.draw(
             Font6x8::render_str(&format!("{:?}", hash))
                 .translate((0, 24))
                 .into_iter(),
         );
-
-        let mut packet = [0x01, 0x02, sensor_pcnt, hash[0]];
-        radio.transmit(&mut packet).unwrap();
 
         display.draw(
             Font6x8::render_str(&format!("{}%", sensor_pcnt))
