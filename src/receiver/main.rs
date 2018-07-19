@@ -68,7 +68,9 @@ fn main() -> ! {
     radio.set_frequency(915_000_000).unwrap();
     radio.set_power_level(10).unwrap();
     radio.write_strobe(Command::SFRX).unwrap();
-    radio.write_register(config::Register::PKTCTRL1, 0b_0000_1110).unwrap();
+    radio
+        .write_register(config::Register::PKTCTRL1, 0b_0000_1110)
+        .unwrap();
 
     let mut payload: [u8; 12] = [0; 12];
     let mut addr: u8 = 0;
