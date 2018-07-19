@@ -51,4 +51,5 @@ rev = "70a76dc"
 features = ["graphics"]
 
 [dependencies.cc1101]
-path = "/Users/ferdiamckeogh/Documents/embedded/rust/cc1101"
+git = "https://github.com/chocol4te/cc1101.git"
+rev = "c3f0cdf"
