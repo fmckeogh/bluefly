@@ -1,5 +1,5 @@
 #  mremote
-> Encrypted electric longboard remote with telemetry and lighting
+> Encrypted electric longboard remote with telemetry
 
 ## Building
 [![Build Status](https://travis-ci.org/chocol4te/mremote.svg?branch=master)](https://travis-ci.org/chocol4te/mremote)
@@ -10,22 +10,23 @@
 
 ## Aims
 * No connection issues *ever*
-* Full telemetry and configuration of VESC from remote
+* Telemetry and configuration of VESC from remote
 * 100 hours per charge
 * Comfortable - long journeys should not tire the user's hand
 
 ## Components
-* STM32F103C8
+* STM32F103C8 microcontrollers
 * SSD1306 display
 * CC1101 radios
 * NCR18650GA battery
-* 50mm SoftPot throttle
+* 50mm SoftPot
 
 ## TODO
 ### Software
 - [x] Basic radio functionality
 - [x] Interface with VESC
 - [x] Use ADC to read SoftPot
+- [x] Encrypt and authenticate packets
 - [ ] Create telemetry display
 - [ ] ~Implement RTFM~
 - [ ] Configuration menu for VESC
@@ -42,7 +43,7 @@
 
 Issues and PRs very welcome, nothing is too small.
 
-All PRs must pass all checks, have run `cargo fmt` and `cargo fix`.
+All PRs must have run `cargo fmt` and `cargo fix`.
 
 ## License
 GNU Affero General Public License v3.0([LICENSE](LICENSE) or
