@@ -26,12 +26,12 @@
 - [x] Basic radio functionality
 - [x] Interface with VESC
 - [x] Use ADC to read SoftPot
-- [x] Encrypt and authenticate packets
+- [ ] Encrypt and authenticate packets
 - [ ] Create telemetry display
-- [ ] ~Implement RTFM~
+- [ ] Hardware interrupts instead of polling
+- [ ] RTFM?
 - [ ] Configuration menu for VESC
 - [ ] VESC firmware update from remote
-- [ ] Customization of screen
 
 ### Hardware
 - [ ] Finalise breadboard design of both remote and receiver
