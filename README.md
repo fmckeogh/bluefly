@@ -5,6 +5,7 @@
 [![Build Status](https://travis-ci.org/chocol4te/mremote.svg?branch=master)](https://travis-ci.org/chocol4te/mremote)
 
 ```make tx``` builds and flashes the firmware for the controller
+
 ```make rx``` builds and flashes the firmware for the receiver
 
 ## Aims
@@ -17,20 +18,22 @@
 * STM32F103C8
 * SSD1306 display
 * CC1101 radios
-* NCR18650GA
-* 50mm SoftPot
+* NCR18650GA battery
+* 50mm SoftPot throttle
 
 ## TODO
 ### Software
+- [x] Basic radio functionality
+- [x] Interface with VESC
+- [x] Use ADC to read SoftPot
 - [ ] Create telemetry display
-- [x] Get radios working (packet abstraction?)
 - [ ] ~Implement RTFM~
 - [ ] Configuration menu for VESC
 - [ ] VESC firmware update from remote
 - [ ] Customization of screen
 
 ### Hardware
-- [x] Finalise breadboard design of both remote and receiver
+- [ ] Finalise breadboard design of both remote and receiver
 - [ ] Case design
 - [ ] PCB design of both remote and receiver
 
