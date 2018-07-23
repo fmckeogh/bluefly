@@ -29,7 +29,7 @@ use hal::delay::Delay;
 use hal::prelude::*;
 use hal::spi::Spi;
 use hal::stm32f103xx;
-use pruefung::crc::Crc32;
+use pruefung::crc::Crc16;
 use pruefung::Hasher;
 use rt::ExceptionFrame;
 use ssd1306::prelude::*;
@@ -50,6 +50,8 @@ fn main() -> ! {
 
     // Enable ADC clocks
     dp.RCC.apb2enr.write(|w| w.adc1en().set_bit());
+    // Power on ADC
+    dp.ADC1.cr2.write(|w| w.adon().set_bit());
 
     let mut flash = dp.FLASH.constrain();
     let mut rcc = dp.RCC.constrain();
@@ -122,9 +124,6 @@ fn main() -> ! {
     display.clear();
     display.flush().unwrap();
 
-    // Power on ADC
-    dp.ADC1.cr2.write(|w| w.adon().set_bit());
-
     loop {
         display.clear();
 
@@ -132,7 +131,7 @@ fn main() -> ! {
         dp.ADC1.cr2.write(|w| w.adon().set_bit());
         while dp.ADC1.sr.read().eoc().bit_is_clear() {}
         let sensor_val: u32 = dp.ADC1.dr.read().data().bits().into();
-        let sensor_pcnt: u8 = ((sensor_val * 100) / 4096) as u8;
+        let sensor_pcnt = ((sensor_val * 100) / 4096) as u8;
 
         if sensor_pcnt > 50 {
             led.set_low();
@@ -140,10 +139,10 @@ fn main() -> ! {
             led.set_high();
         }
 
-        let mut hasher: Crc32 = Default::default();
+        let mut hasher: Crc16 = Default::default();
         hasher.write_u8(sensor_pcnt);
-        let mut hash: [u8; 4] = [0; 4];
-        LittleEndian::write_u32(&mut hash, hasher.finish() as u32);
+        let mut hash: [u8; 2] = [0; 2];
+        LittleEndian::write_u16(&mut hash, hasher.finish() as u16);
 
         let mut packet = [0x01, 0x02, sensor_pcnt, hash[0]];
         radio.transmit(&mut packet).unwrap();
