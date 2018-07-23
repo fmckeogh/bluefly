@@ -86,7 +86,7 @@ fn main() -> ! {
         clocks,
         &mut rcc.apb2,
     );
-    let (mut tx, mut rx) = serial.split();
+    let (mut tx, mut _rx) = serial.split();
 
     let mut radio_payload: [u8; 12] = [0; 12];
     let mut addr: u8 = 0;
