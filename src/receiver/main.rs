@@ -69,7 +69,7 @@ fn main() -> ! {
 
     let mut radio = Cc1101::new(spi, cs).unwrap();
     radio.preset_msk_500kb().unwrap();
-    radio.set_frequency(915_000_000).unwrap();
+    radio.set_frequency(433_000_000).unwrap();
     radio.set_power_level(10).unwrap();
     radio.write_strobe(Command::SFRX).unwrap();
     radio

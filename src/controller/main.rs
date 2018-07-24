@@ -88,7 +88,7 @@ fn main() -> ! {
 
     let mut radio = Cc1101::new(spi1, cs1).unwrap();
     radio.preset_msk_500kb().unwrap();
-    radio.set_frequency(915_000_000).unwrap();
+    radio.set_frequency(433_000_000).unwrap();
     radio.set_power_level(10).unwrap();
     radio
         .write_register(config::Register::PKTCTRL1, 0b_0000_1110)
