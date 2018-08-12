@@ -1,5 +1,4 @@
 EESchema Schematic File Version 4
-LIBS:mremote-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
@@ -85,26 +84,4 @@ Connection ~ 2350 5450
 Wire Wire Line
 	1700 5250 2350 5250
 Connection ~ 2350 5250
-Text GLabel 9500 3150 2    50   Input ~ 0
-OSCIN
-Text GLabel 9500 3250 2    50   Input ~ 0
-OSCOUT
-Text GLabel 9500 2750 2    50   Input ~ 0
-SPI2_SCK
-Text GLabel 9500 2850 2    50   Input ~ 0
-SPI2_MISO
-Text GLabel 9500 2950 2    50   Input ~ 0
-SPI2_MOSI
-Text GLabel 2200 3350 0    50   Input ~ 0
-LED
-Text GLabel 2200 1450 0    50   Input ~ 0
-ADC0
-Text GLabel 2200 1850 0    50   Input ~ 0
-SPI1_CSN
-Text GLabel 2200 1950 0    50   Input ~ 0
-SPI1_SCK
-Text GLabel 2200 2050 0    50   Input ~ 0
-SPI1_MISO
-Text GLabel 2200 2150 0    50   Input ~ 0
-SPI1_MOSI
 $EndSCHEMATC
