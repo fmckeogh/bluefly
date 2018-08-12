@@ -13,7 +13,8 @@ install:
 
 script:
   - cargo fmt --all -- --check
-  - cargo check --target $TARGET_BUILD
+  - cargo check --target $TARGET_BUILD --bin controller
+  - cargo check --target $TARGET_BUILD --bin receiver
 
 after_script: set +e
 
