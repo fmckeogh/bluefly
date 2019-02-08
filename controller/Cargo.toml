@@ -1,0 +1,24 @@
+[package]
+authors = ["Ferdia McKeogh <ferdia@mckeogh.tech>"]
+edition = "2018"
+name = "controller"
+version = "0.0.1"
+
+[[bin]]
+name = "controller"
+test = false
+bench = false
+
+[dependencies]
+nb = "0.1.1"
+cortex-m-rt = "0.6.7"
+stm32f103xx-hal = { git = "https://github.com/japaric/stm32f103xx-hal.git", rev = "da4de59", features = ["rt"] }
+cortex-m = "0.5.8"
+panic-semihosting = "0.5.1"
+alloc-cortex-m = "0.3.5"
+cortex-m-rtfm = { version = "0.4.0", features = ["timer-queue"] }
+cortex-m-semihosting = "0.3.2"
+embedded-hal = "0.2.2"
+embedded-graphics = "0.4.5"
+ssd1306 = "0.2.2"
+nrf24l01 = { path = "/Users/ferdiamckeogh/Downloads/nrf24l01-master" }

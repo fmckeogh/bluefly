@@ -9,6 +9,5 @@ desktop.ini
 *.org
 .#*
 .gdb_history
-Cargo.lock
 Cargo.toml.orig
-target/
+target

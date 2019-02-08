@@ -12,7 +12,7 @@ before_install: set -e
 
 install:
   - rustup target add $TARGET_BUILD
-  - rustup component add rustfmt-preview
+  - rustup component add rustfmt
 
 script:
   - cargo fmt --all -- --check
@@ -20,11 +20,6 @@ script:
   - cargo check --target $TARGET_BUILD --bin receiver
 
 after_script: set +e
-
-cache: cargo
-
-before_cache:
-  - chmod -R a+r $HOME/.cargo
 
 notifications:
   email:

@@ -1,4 +1,8 @@
-target remote :3333
+define hook-quit
+    set confirm off
+end
+
+target extended-remote :3333
 
 monitor arm semihosting enable
 
@@ -15,4 +19,5 @@ monitor arm semihosting enable
 # monitor itm port 0 on
 
 load
-step
+
+continue
