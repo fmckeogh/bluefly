@@ -21,4 +21,5 @@ cortex-m-semihosting = "0.3.2"
 embedded-hal = "0.2.2"
 embedded-graphics = "0.4.5"
 ssd1306 = "0.2.2"
-nrf24l01 = { path = "/Users/ferdiamckeogh/Downloads/nrf24l01-master" }
+ssmarshal = { version = "1.0.0", default-features = false }
+common = { path = "../common/" }
