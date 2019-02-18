@@ -48,7 +48,7 @@ dependencies = [
  "common 0.0.1",
  "cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-rt 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "cortex-m-rtfm 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cortex-m-rtfm 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-semihosting 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "embedded-graphics 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -99,19 +99,19 @@ dependencies = [
 
 [[package]]
 name = "cortex-m-rtfm"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-rt 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "cortex-m-rtfm-macros 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cortex-m-rtfm-macros 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "heapless 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "owned-singleton 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "cortex-m-rtfm-macros"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "proc-macro2 0.4.27 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -285,7 +285,7 @@ dependencies = [
  "common 0.0.1",
  "cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-rt 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "cortex-m-rtfm 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cortex-m-rtfm 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-semihosting 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -456,8 +456,8 @@ dependencies = [
 "checksum cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)" = "dab2164a0fc216781a47fc343347365112ae6917421d3fa4bac6faf0fbaaaec7"
 "checksum cortex-m-rt 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)" = "f69d2beca37acc3776c17201c9d1f8904fb9139fa3a4d2cf28c8436a07b21a88"
 "checksum cortex-m-rt-macros 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "d7ae692573e0acccb1579fef1abf5a5bf1d2f3f0149a22b16870ec9309aee25f"
-"checksum cortex-m-rtfm 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f01a50a033c9278977fd7f0adadfabb01d3cb31103b7919b9820d02ef12526a8"
-"checksum cortex-m-rtfm-macros 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6ea8bdc3acb36b54ec0a969d8cfd21df8fff11d7d8cb5c9072f9cca59266fa78"
+"checksum cortex-m-rtfm 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "6b5c902cf9e63e346ac018f9462d30de7c502feab5351b3adca90cdd7771b74c"
+"checksum cortex-m-rtfm-macros 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "40bb8b2e08acae1e0538bdc52168701c80bb8e8880c201507183190341261fea"
 "checksum cortex-m-semihosting 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d1dc2abec1a772e8bb697cad17d5710f180043caf8939820f0f6ba4b7ae2a4b5"
 "checksum crc16 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "338089f42c427b86394a5ee60ff321da23a5c89c9d89514c829687b26359fcff"
 "checksum embedded-graphics 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)" = "3e2584680d50f34bbd24db909ddbb8f12eb8f49bbbee23c22a71e6b7a78834e4"
