@@ -20,6 +20,6 @@ cortex-m-rtfm = { version = "0.4.0", features = ["timer-queue"] }
 cortex-m-semihosting = "0.3.2"
 embedded-hal = "0.2.2"
 embedded-graphics = "0.4.5"
-ssd1306 = "0.2.2"
+ssd1306 = "0.2.3"
 ssmarshal = { version = "1.0.0", default-features = false }
 common = { path = "../common/" }
