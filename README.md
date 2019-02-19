@@ -13,9 +13,8 @@ TODO
 * Comfortable - long journeys should not tire the user's hand
 
 ## Components
-* STM32F103C8 microcontrollers
+* nRF52810 microcontrollers
 * SSD1306 display
-* CC1101 radios (NRF24L01 temporarily)
 * NCR18650GA battery
 * Hall-effect thumb control
 
@@ -38,8 +37,8 @@ TODO
 
 ## Contributing
 
-Issues and PRs very welcome, nothing is too small.
+Issues and PRs very welcome :)
 
 ## License
-GNU Affero General Public License v3.0([LICENSE](LICENSE) or
-  https://www.gnu.org/licenses/agpl-3.0.txt)
+Mozilla Public License Version 2.0([LICENSE](LICENSE) or
+  https://www.mozilla.org/en-US/MPL/2.0/)
