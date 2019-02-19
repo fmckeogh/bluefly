@@ -1,6 +1,6 @@
 language: rust
 rust: nightly
-env: TARGET_BUILD=thumbv7m-none-eabi
+env: TARGET_BUILD=thumbv7em-none-eabi
 
 addons:
   apt:
