@@ -2,24 +2,20 @@ language: rust
 rust: nightly
 env: TARGET_BUILD=thumbv7em-none-eabi
 
-addons:
-  apt:
-    update: true
-    packages:
-    - gcc-arm-none-eabi
+stages:
+  - stylecheck
+  - compile
 
-before_install: set -e
-
-install:
-  - rustup target add $TARGET_BUILD
-  - rustup component add rustfmt
-
-script:
-  - cargo fmt --all -- --check
-  - cargo check --target $TARGET_BUILD --bin controller
-  - cargo check --target $TARGET_BUILD --bin receiver
-
-after_script: set +e
+jobs:
+  include:
+    - stage: stylecheck
+      script: 
+        - rustup component add rustfmt
+        - cargo fmt --all -- --check
+    - stage: compile
+      script:
+        - rustup target add $TARGET_BUILD
+        - cargo check --target $TARGET_BUILD --all
 
 notifications:
   email:
