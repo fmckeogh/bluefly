@@ -1,5 +1,5 @@
 #  mremote
-> Encrypted electric longboard remote with telemetry
+> BLE-based light electric vehicle control system
 
 ## Building
 [![Build Status](https://travis-ci.org/chocol4te/mremote.svg?branch=master)](https://travis-ci.org/chocol4te/mremote) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=chocol4te/mremote)](https://dependabot.com)
