@@ -28,4 +28,5 @@
   (lib (name SparkFun-RF)(type Legacy)(uri ${KIPRJMOD}/deps/Libraries/SparkFun-RF.lib)(options "")(descr ""))
   (lib (name SparkFun-Sensors)(type Legacy)(uri ${KIPRJMOD}/deps/Libraries/SparkFun-Sensors.lib)(options "")(descr ""))
   (lib (name SparkFun-Switches)(type Legacy)(uri ${KIPRJMOD}/deps/Libraries/SparkFun-Switches.lib)(options "")(descr ""))
+  (lib (name receiver-rescue)(type Legacy)(uri ${KIPRJMOD}/receiver-rescue.lib)(options "")(descr ""))
 )

@@ -15,7 +15,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L RF_Bluetooth:BL652 U1
+L receiver-rescue:BL652-RF_Bluetooth U1
 U 1 1 5C65B55E
 P 5600 3750
 F 0 "U1" H 5600 5028 50  0000 C CNN
@@ -26,7 +26,7 @@ F 3 "" H 5600 2450 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L SparkFun-PowerSymbols:GND #GND0101
+L receiver-rescue:GND-SparkFun-PowerSymbols #GND0101
 U 1 1 5C65B751
 P 5800 5100
 F 0 "#GND0101" H 5850 5050 45  0001 L BNN
@@ -37,7 +37,7 @@ F 3 "" H 5800 5000 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L SparkFun-PowerSymbols:VCC #SUPPLY0101
+L receiver-rescue:VCC-SparkFun-PowerSymbols #SUPPLY0101
 U 1 1 5C65B87F
 P 5950 2450
 F 0 "#SUPPLY0101" H 6000 2450 45  0001 L BNN
@@ -48,7 +48,7 @@ F 3 "" H 5950 2450 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L SparkFun-Connectors:TEST-POINT3 SWDCLK1
+L receiver-rescue:TEST-POINT3-SparkFun-Connectors SWDCLK1
 U 1 1 5C65CA5C
 P 6750 2850
 F 0 "SWDCLK1" H 7050 2850 45  0000 C CNN
@@ -59,7 +59,7 @@ F 3 "" H 6750 2850 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L SparkFun-Connectors:TEST-POINT3 SWDIO1
+L receiver-rescue:TEST-POINT3-SparkFun-Connectors SWDIO1
 U 1 1 5C65CAD9
 P 6750 2950
 F 0 "SWDIO1" H 7050 2950 45  0000 C CNN
@@ -78,7 +78,7 @@ Wire Wire Line
 Wire Wire Line
 	5950 2650 5950 2450
 $Comp
-L SparkFun-Connectors:CONN_04 J1
+L receiver-rescue:CONN_04-SparkFun-Connectors J1
 U 1 1 5C65D49D
 P 3500 3650
 F 0 "J1" H 3456 4070 45  0000 C CNN
@@ -89,7 +89,7 @@ F 3 "" H 3500 3650 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L SparkFun-PowerSymbols:VCC #SUPPLY0102
+L receiver-rescue:VCC-SparkFun-PowerSymbols #SUPPLY0102
 U 1 1 5C65D53A
 P 3700 3250
 F 0 "#SUPPLY0102" H 3750 3250 45  0001 L BNN
@@ -104,7 +104,7 @@ Wire Wire Line
 Wire Wire Line
 	3700 3350 3700 3250
 $Comp
-L SparkFun-PowerSymbols:GND #GND0102
+L receiver-rescue:GND-SparkFun-PowerSymbols #GND0102
 U 1 1 5C65DC87
 P 3950 3550
 F 0 "#GND0102" H 4000 3500 45  0001 L BNN
@@ -131,7 +131,7 @@ Wire Wire Line
 Wire Wire Line
 	4450 3650 4600 3650
 $Comp
-L SparkFun-Connectors:TEST-POINT3 GND1
+L receiver-rescue:TEST-POINT3-SparkFun-Connectors GND1
 U 1 1 5C65F07A
 P 5600 5100
 F 0 "GND1" H 5900 5100 45  0000 C CNN
@@ -142,7 +142,7 @@ F 3 "" H 5600 5100 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L SparkFun-Connectors:TEST-POINT3 VCC1
+L receiver-rescue:TEST-POINT3-SparkFun-Connectors VCC1
 U 1 1 5C65F511
 P 6050 2650
 F 0 "VCC1" H 6350 2650 45  0000 C CNN
@@ -181,7 +181,7 @@ Wire Wire Line
 Wire Wire Line
 	3950 3450 3950 3550
 $Comp
-L SparkFun-Capacitors:0.1UF-0402-16V-10% C1
+L receiver-rescue:0.1UF-0402-16V-10%-SparkFun-Capacitors C1
 U 1 1 5C6B209A
 P 8050 3800
 F 0 "C1" H 8158 3945 45  0000 L CNN
@@ -193,7 +193,7 @@ F 4 "CAP-12416" H 8158 3766 60  0000 L CNN "Field4"
 	1    0    0    -1  
 $EndComp
 $Comp
-L SparkFun-PowerSymbols:GND #GND01
+L receiver-rescue:GND-SparkFun-PowerSymbols #GND01
 U 1 1 5C6B248D
 P 8050 4000
 F 0 "#GND01" H 8100 3950 45  0001 L BNN
@@ -204,7 +204,7 @@ F 3 "" H 8050 3900 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L SparkFun-PowerSymbols:VCC #SUPPLY01
+L receiver-rescue:VCC-SparkFun-PowerSymbols #SUPPLY01
 U 1 1 5C6B2911
 P 8050 3500
 F 0 "#SUPPLY01" H 8100 3500 45  0001 L BNN

@@ -1,11 +1,11 @@
 EESchema-LIBRARY Version 2.4
 #encoding utf-8
 #
-# receiver-rescue_0.1UF-0402-16V-10%-SparkFun-Capacitors
+# 0.1UF-0402-16V-10%-SparkFun-Capacitors
 #
-DEF receiver-rescue_0.1UF-0402-16V-10%-SparkFun-Capacitors C 0 40 N N 1 L N
+DEF 0.1UF-0402-16V-10%-SparkFun-Capacitors C 0 40 N N 1 L N
 F0 "C" 60 115 45 H V L BNN
-F1 "receiver-rescue_0.1UF-0402-16V-10%-SparkFun-Capacitors" 60 -85 45 H V L BNN
+F1 "0.1UF-0402-16V-10%-SparkFun-Capacitors" 60 -85 45 H V L BNN
 F2 "0402" 0 250 20 H I C CNN
 F3 "" 0 0 50 H I C CNN
 F4 "CAP-12416" 0 300 60 H V C CNN
@@ -26,11 +26,11 @@ X 2 2 0 -100 100 U 40 40 1 1 P
 ENDDRAW
 ENDDEF
 #
-# receiver-rescue_BL652-RF_Bluetooth
+# BL652-RF_Bluetooth
 #
-DEF receiver-rescue_BL652-RF_Bluetooth U 0 40 Y Y 1 F N
+DEF BL652-RF_Bluetooth U 0 40 Y Y 1 F N
 F0 "U" 0 50 50 H V C CNN
-F1 "receiver-rescue_BL652-RF_Bluetooth" 0 -50 50 H V C CNN
+F1 "BL652-RF_Bluetooth" 0 -50 50 H V C CNN
 F2 "RF_Module:Laird_BL652" 0 -1200 50 H I C CNN
 F3 "" 0 -1300 50 H I C CNN
 $FPLIST
@@ -80,11 +80,11 @@ X SIO_18 9 1000 -800 100 L 50 50 1 1 B
 ENDDRAW
 ENDDEF
 #
-# receiver-rescue_CONN_04-SparkFun-Connectors
+# CONN_04-SparkFun-Connectors
 #
-DEF receiver-rescue_CONN_04-SparkFun-Connectors J 0 40 N Y 1 L N
+DEF CONN_04-SparkFun-Connectors J 0 40 N Y 1 L N
 F0 "J" -200 400 45 H V L BNN
-F1 "receiver-rescue_CONN_04-SparkFun-Connectors" -200 -150 45 H V L BNN
+F1 "CONN_04-SparkFun-Connectors" -200 -150 45 H V L BNN
 F2 "1X04" 0 500 20 H I C CNN
 F3 "" 0 0 50 H I C CNN
 F4 "CONN-09696" 0 550 60 H V C CNN
@@ -116,11 +116,11 @@ X 4 4 100 300 100 L 40 40 1 1 P
 ENDDRAW
 ENDDEF
 #
-# receiver-rescue_GND-SparkFun-PowerSymbols
+# GND-SparkFun-PowerSymbols
 #
-DEF receiver-rescue_GND-SparkFun-PowerSymbols #GND 0 40 N N 1 L P
+DEF GND-SparkFun-PowerSymbols #GND 0 40 N N 1 L P
 F0 "#GND" 50 -50 45 H I L BNN
-F1 "receiver-rescue_GND-SparkFun-PowerSymbols" -70 -200 45 H V L BNN
+F1 "GND-SparkFun-PowerSymbols" -70 -200 45 H V L BNN
 F2 "" 0 -100 60 H I C CNN
 F3 "" 0 -100 60 H I C CNN
 DRAW
@@ -130,11 +130,11 @@ X GND ~ 0 0 0 D 40 40 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# receiver-rescue_TEST-POINT3-SparkFun-Connectors
+# TEST-POINT3-SparkFun-Connectors
 #
-DEF receiver-rescue_TEST-POINT3-SparkFun-Connectors TP 0 40 N N 1 L N
+DEF TEST-POINT3-SparkFun-Connectors TP 0 40 N N 1 L N
 F0 "TP" -100 100 45 H V L BNN
-F1 "receiver-rescue_TEST-POINT3-SparkFun-Connectors" -100 -100 45 H V L BNN
+F1 "TEST-POINT3-SparkFun-Connectors" -100 -100 45 H V L BNN
 F2 "PAD.03X.03" 0 200 20 H I C CNN
 F3 "" 0 0 50 H I C CNN
 F4 "XXX-00000" 0 250 60 H V C CNN
@@ -148,11 +148,11 @@ X 1 P$1 0 0 0 L 40 40 1 1 B
 ENDDRAW
 ENDDEF
 #
-# receiver-rescue_VCC-SparkFun-PowerSymbols
+# VCC-SparkFun-PowerSymbols
 #
-DEF receiver-rescue_VCC-SparkFun-PowerSymbols #SUPPLY 0 40 N N 1 L P
+DEF VCC-SparkFun-PowerSymbols #SUPPLY 0 40 N N 1 L P
 F0 "#SUPPLY" 50 0 45 H I L BNN
-F1 "receiver-rescue_VCC-SparkFun-PowerSymbols" -50 150 45 H V L BNN
+F1 "VCC-SparkFun-PowerSymbols" -50 150 45 H V L BNN
 F2 "XXX-00000" 0 300 60 H V C CNN
 F3 "" 0 0 60 H I C CNN
 DRAW
