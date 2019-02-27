@@ -11,7 +11,7 @@ bench = false
 
 [dependencies]
 panic-semihosting = "0.5.1"
-cortex-m-rtfm = { version = "0.4.1", features = ["timer-queue"] }
+cortex-m-rtfm = { version = "0.4.2", features = ["timer-queue"] }
 cortex-m-semihosting = "0.3.2"
 nrf52810-pac = "0.6.0"
 nrf52810-hal = { git = "https://github.com/nrf-rs/nrf52-hal.git", rev = "028c830", features = ["rt"] }
