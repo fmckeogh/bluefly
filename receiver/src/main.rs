@@ -8,7 +8,7 @@ use rtfm::app;
 
 const PERIOD: u32 = 1000;
 
-#[app(device = nrf52810_pac)]
+#[app(device = nrf52810_hal::nrf52810_pac)]
 const APP: () = {
     #[init]
     fn init() {

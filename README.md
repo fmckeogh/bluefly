@@ -3,7 +3,7 @@
 
 > BLE-based light electric vehicle control system
 
-[![Build Status](https://travis-ci.org/chocol4te/mremote.svg?branch=master)](https://travis-ci.org/chocol4te/mremote) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=chocol4te/mremote)](https://dependabot.com)
+[![Build Status](https://travis-ci.org/chocol4te/bluefly.svg?branch=master)](https://travis-ci.org/chocol4te/bluefly) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=chocol4te/bluefly)](https://dependabot.com)
 
 ## Building
 

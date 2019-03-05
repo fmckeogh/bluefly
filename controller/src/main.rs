@@ -1,46 +1,48 @@
 #![no_std]
 #![no_main]
-#![feature(alloc)]
-#![feature(lang_items)]
 
-#[macro_use]
-extern crate alloc;
 extern crate panic_semihosting;
 
-use alloc_cortex_m::CortexMHeap;
-use cortex_m_semihosting::hprintln;
+use core::fmt::Write;
 use embedded_graphics::{coord::Coord, fonts::Font6x8, prelude::*};
 use nrf52810_hal::{
     self as hal,
     gpio::{Level, Output, Pin, PushPull},
-    nrf52810_pac::{self as device, SPIM0},
-    prelude::{GpioExt, SpimExt, _embedded_hal_digital_OutputPin},
-    Spim,
+    nrf52810_pac::{self as device, SPIM0, UARTE0},
+    prelude::*,
+    spim::{Frequency, Spim, MODE_0},
+    uarte::{Baudrate, Parity, Uarte},
 };
 use rtfm::app;
 use ssd1306::{interface::spi::SpiInterface, mode::graphics::GraphicsMode, prelude::*, Builder};
 
-#[global_allocator]
-static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
-
 #[app(device = nrf52810_hal::nrf52810_pac)]
 const APP: () = {
     static mut COUNT: u64 = ();
+    static mut SERIAL: Uarte<UARTE0> = ();
     static mut DISPLAY: GraphicsMode<SpiInterface<Spim<SPIM0>, Pin<Output<PushPull>>>> = ();
 
     #[init]
     fn init() {
-        hprintln!("init...").unwrap();
-
-        // Allocator
-        {
-            let start = cortex_m_rt::heap_start() as usize;
-            let size = 512; // in bytes
-            unsafe { ALLOCATOR.init(start, size) }
-        }
-
         let device: device::Peripherals = device;
         let p0 = device.P0.split();
+
+        let mut serial = {
+            let rxd = p0.p0_08.into_floating_input().degrade();
+            let txd = p0.p0_06.into_push_pull_output(Level::Low).degrade();
+
+            let pins = hal::uarte::Pins {
+                rxd,
+                txd,
+                cts: None,
+                rts: None,
+            };
+
+            device
+                .UARTE0
+                .constrain(pins, Parity::EXCLUDED, Baudrate::BAUD1M)
+        };
+        writeln!(serial, "init").unwrap();
 
         let display = {
             let spi = {
@@ -54,7 +56,7 @@ const APP: () = {
                     mosi: Some(mosi),
                 };
 
-                device.SPIM0.constrain(pins)
+                device.SPIM0.constrain(pins, Frequency::M8, MODE_0, 0)
             };
 
             let dc = p0.p0_09.into_push_pull_output(Level::Low).degrade();
@@ -76,25 +78,24 @@ const APP: () = {
             display
         };
 
-        hprintln!("init complete\n").unwrap();
-
         COUNT = 0;
+        SERIAL = serial;
         DISPLAY = display;
     }
 
-    #[idle(resources = [COUNT, DISPLAY])]
+    #[idle(resources = [COUNT, DISPLAY, SERIAL])]
     fn idle() -> ! {
         loop {
             *resources.COUNT += 1;
 
             resources.DISPLAY.draw(
-                Font6x8::render_str(&format!("count: {}", resources.COUNT))
+                Font6x8::render_str("test")
                     .translate(Coord::new(0, 0))
                     .into_iter(),
             );
             resources.DISPLAY.flush().unwrap();
 
-            //hprintln!("idle, count: {}", resources.COUNT).unwrap();
+            writeln!(resources.SERIAL, "idle, count: {}", resources.COUNT).unwrap();
         }
     }
 
@@ -102,9 +103,3 @@ const APP: () = {
         fn PDM();
     }
 };
-
-#[lang = "oom"]
-#[no_mangle]
-pub fn rust_oom(layout: core::alloc::Layout) -> ! {
-    panic!("{:?}", layout);
-}

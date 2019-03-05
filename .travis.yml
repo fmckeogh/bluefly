@@ -1,5 +1,5 @@
 language: rust
-rust: nightly
+rust: stable
 env: TARGET_BUILD=thumbv7em-none-eabi
 
 stages:
@@ -9,7 +9,7 @@ stages:
 jobs:
   include:
     - stage: stylecheck
-      script: 
+      script:
         - rustup component add rustfmt
         - cargo fmt --all -- --check
     - stage: compile
