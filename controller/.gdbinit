@@ -2,6 +2,8 @@ define hook-quit
     set confirm off
 end
 
+set pagination off
+
 target extended-remote /dev/cu.usbmodemE4D7B7C1
 mon swdp_scan
 att 1

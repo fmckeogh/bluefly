@@ -2,9 +2,13 @@ define hook-quit
     set confirm off
 end
 
-target extended-remote :3334
+set pagination off
 
-monitor arm semihosting enable
+target extended-remote /dev/cu.usbmodemC1E98D01
+mon swdp_scan
+att 1
+
+# monitor arm semihosting enable
 
 # # send captured ITM to the file itm.fifo
 # # (the microcontroller SWO pin must be connected to the programmer SWO pin)

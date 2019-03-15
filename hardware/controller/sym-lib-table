@@ -30,4 +30,5 @@
   (lib (name SparkFun-Switches)(type Legacy)(uri ${KIPRJMOD}/deps/Libraries/SparkFun-Switches.lib)(options "")(descr ""))
   (lib (name tinkerforge)(type Legacy)(uri "/Users/ferdiamckeogh/Library/Mobile Documents/com~apple~CloudDocs/mremote-hw/controller/deps/tinkerforge.lib")(options "")(descr ""))
   (lib (name Type-C)(type Legacy)(uri ${KIPRJMOD}/deps/Type-C.lib)(options "")(descr ""))
+  (lib (name controller-rescue)(type Legacy)(uri ${KIPRJMOD}/controller-rescue.lib)(options "")(descr ""))
 )
