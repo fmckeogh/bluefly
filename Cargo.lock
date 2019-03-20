@@ -58,7 +58,7 @@ dependencies = [
  "embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fpa 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nrf52810-hal 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=c2ddfd3)",
+ "nrf52810-hal 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=80eeeab)",
  "panic-semihosting 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -193,7 +193,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "nrf52-hal-common"
 version = "0.7.0"
-source = "git+https://github.com/nrf-rs/nrf52-hal?rev=c2ddfd3#c2ddfd356bac75202049500ecaa7b971c9af1705"
+source = "git+https://github.com/chocol4te/nrf52-hal?rev=80eeeab#80eeeabb82f32aefb97b49b23a22382d5e90c959"
 dependencies = [
  "cast 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -208,13 +208,13 @@ dependencies = [
 [[package]]
 name = "nrf52810-hal"
 version = "0.7.0"
-source = "git+https://github.com/nrf-rs/nrf52-hal?rev=c2ddfd3#c2ddfd356bac75202049500ecaa7b971c9af1705"
+source = "git+https://github.com/chocol4te/nrf52-hal?rev=80eeeab#80eeeabb82f32aefb97b49b23a22382d5e90c959"
 dependencies = [
  "cast 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nrf52-hal-common 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=c2ddfd3)",
+ "nrf52-hal-common 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=80eeeab)",
  "nrf52810-pac 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "void 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -314,7 +314,7 @@ dependencies = [
  "embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fpa 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nrf52810-hal 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=c2ddfd3)",
+ "nrf52810-hal 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=80eeeab)",
  "panic-semihosting 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -410,8 +410,8 @@ dependencies = [
 "checksum hash32 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "12d790435639c06a7b798af9e1e331ae245b7ef915b92f70a39b4cf8c00686af"
 "checksum heapless 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "56b960caff1a46f1fb3c1eb05f0575ac21c6248364ebebde11b11116e099881c"
 "checksum nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "69f380b5fe9fab8c0d7a6a99cda23e2cc0463bedb2cbc3aada0813b98496ecdc"
-"checksum nrf52-hal-common 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=c2ddfd3)" = "<none>"
-"checksum nrf52810-hal 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=c2ddfd3)" = "<none>"
+"checksum nrf52-hal-common 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=80eeeab)" = "<none>"
+"checksum nrf52810-hal 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=80eeeab)" = "<none>"
 "checksum nrf52810-pac 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f087616ef0a21481ae172bf363a39cdbe1e146dcca91b5d548c41e1ba9bf8c1f"
 "checksum owned-singleton 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "21aa378869c97c7db706a4c576cf0ce8258dc7e0e1ad25a97ee5aba1fd4eed83"
 "checksum owned-singleton-macros 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8d5c2ac071b95017bf70a5b607037fb0ef4abfa663fdf6cac8fbf36af9756ee3"

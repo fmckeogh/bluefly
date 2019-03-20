@@ -19,11 +19,13 @@ use {
     },
     byteorder::{ByteOrder, LittleEndian},
     core::{fmt::Write, time::Duration, u32},
+    embedded_hal::adc::{Channel, OneShot},
     nrf52810_hal::{
         self as hal,
         gpio::Level,
         nrf52810_pac::{self as pac, UARTE0},
         prelude::*,
+        saadc::Saadc,
         uarte::{Baudrate, Parity, Uarte},
     },
     rtfm::app,
@@ -38,7 +40,8 @@ const APP: () = {
     static mut BASEBAND: Baseband<Logger> = ();
     static mut BEACON_TIMER: pac::TIMER1 = ();
     static BLE_TIMER: pac::TIMER0 = ();
-    static mut ADC: pac::SAADC = ();
+    static mut ADC: Saadc = ();
+    static mut ADC_PIN: hal::gpio::p0::P0_02<hal::gpio::Input<hal::gpio::Floating>> = ();
     static ADDR: DeviceAddress = ();
 
     #[init(resources = [BLE_TX_BUF, BLE_RX_BUF])]
@@ -88,51 +91,6 @@ const APP: () = {
             timer.tasks_start.write(|w| unsafe { w.bits(1) });
         }
 
-        {
-            // Configure ADC
-            device.SAADC.enable.write(|w| w.enable().enabled());
-            device.SAADC.resolution.write(|w| w.val()._12bit());
-            device.SAADC.oversample.write(|w| w.oversample().bypass());
-            device.SAADC.samplerate.write(|w| w.mode().task());
-
-            device.SAADC.ch[0].config.write(|w| {
-                w.refsel()
-                    .internal()
-                    .gain()
-                    .gain1_6()
-                    .tacq()
-                    ._10us()
-                    .mode()
-                    .se()
-                    .resp()
-                    .bypass()
-                    .resn()
-                    .bypass()
-                    .burst()
-                    .disabled()
-            });
-            device.SAADC.ch[0]
-                .pselp
-                .write(|w| w.pselp().analog_input0());
-            device.SAADC.ch[0].pseln.write(|w| w.pseln().nc());
-
-            // Calibrate
-            device
-                .SAADC
-                .tasks_calibrateoffset
-                .write(|w| w.tasks_calibrateoffset().trigger());
-            writeln!(serial, "calibrating adc").unwrap();
-            while device
-                .SAADC
-                .events_calibratedone
-                .read()
-                .events_calibratedone()
-                .is_not_generated()
-            {}
-
-            device.SAADC.inten.write(|w| w.end().enabled());
-        }
-
         let device_address = {
             let mut devaddr = [0u8; 6];
             let devaddr_lo = device.FICR.deviceaddr[0].read().bits();
@@ -171,7 +129,8 @@ const APP: () = {
         BASEBAND = baseband;
         BLE_TIMER = device.TIMER0;
         ADDR = device_address;
-        ADC = device.SAADC;
+        ADC = Saadc::new(device.SAADC);
+        ADC_PIN = p0.p0_02.into_floating_input();
     }
 
     #[interrupt(resources = [BLE_TIMER, BASEBAND])]
@@ -182,7 +141,7 @@ const APP: () = {
     }
 
     /// Fire the beacon.
-    #[interrupt(resources = [BEACON_TIMER, BASEBAND, ADDR, ADC])]
+    #[interrupt(resources = [BEACON_TIMER, BASEBAND, ADDR, ADC, ADC_PIN])]
     fn TIMER1() {
         // acknowledge event
         resources.BEACON_TIMER.events_compare[0].reset();
@@ -190,60 +149,17 @@ const APP: () = {
         let log = resources.BASEBAND.logger();
         writeln!(log, "-> beacon").unwrap();
 
-        // Read ADC
-        let buf = [0u8; 2];
-
-        resources
-            .ADC
-            .result
-            .ptr
-            .write(|w| unsafe { w.ptr().bits(buf.as_ptr() as u32) });
-        resources
-            .ADC
-            .result
-            .maxcnt
-            .write(|w| unsafe { w.maxcnt().bits(2) });
-
-        resources
-            .ADC
-            .tasks_sample
-            .write(|w| w.tasks_sample().trigger());
-
-        while resources
-            .ADC
-            .events_done
-            .read()
-            .events_done()
-            .is_not_generated()
-        {
-            writeln!(log, "waiting for adc DONE event").unwrap();
-        }
-
-        writeln!(
-            log,
-            "amount: {}",
-            resources.ADC.result.amount.read().amount().bits()
-        )
-        .unwrap();
-        writeln!(log, "adc: {:?}", buf).unwrap();
+        let val: u16 = resources.ADC.read(resources.ADC_PIN).unwrap();
 
         let beacon = Beacon::new(
             *resources.ADDR,
             &[AdStructure::Unknown {
                 ty: 0xFF,
-                data: &[120u8],
+                data: &[(val / 100) as u8],
             }],
         )
         .unwrap();
         beacon.broadcast(resources.BASEBAND.transmitter());
-    }
-
-    #[interrupt(resources = [ADC])]
-    fn SAADC() {
-        panic!(
-            "saadc end interrupt, amount: {}",
-            resources.ADC.result.amount.read().bits()
-        );
     }
 };
 
