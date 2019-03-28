@@ -149,13 +149,13 @@ const APP: () = {
         let log = resources.BASEBAND.logger();
         writeln!(log, "-> beacon").unwrap();
 
-        let val: u16 = resources.ADC.read(resources.ADC_PIN).unwrap();
+        let val: u16 = resources.ADC.read(resources.ADC_PIN).unwrap() + 10;
 
         let beacon = Beacon::new(
             *resources.ADDR,
             &[AdStructure::Unknown {
                 ty: 0xFF,
-                data: &[(val / 100) as u8],
+                data: &[(val / 38) as u8],
             }],
         )
         .unwrap();

@@ -1,5 +1,5 @@
 
-# BlueFly
+# bluefly
 
 > BLE-based light electric vehicle control system
 

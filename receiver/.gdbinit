@@ -4,7 +4,7 @@ end
 
 set pagination off
 
-target extended-remote /dev/cu.usbmodemC1E98D001
+target extended-remote /dev/cu.usbmodemC1E98D01
 mon swdp_scan
 att 1
 
