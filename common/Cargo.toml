@@ -1,9 +1,0 @@
-[package]
-authors = ["Ferdia McKeogh <ferdia@mckeogh.tech>"]
-edition = "2018"
-name = "common"
-version = "0.0.1"
-
-[dependencies]
-serde = { version = "1.0.87", default-features = false }
-serde_derive = "1.0.87"
