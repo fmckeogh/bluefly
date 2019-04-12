@@ -5,7 +5,6 @@
 
 [![Build Status](https://travis-ci.org/chocol4te/bluefly.svg?branch=master)](https://travis-ci.org/chocol4te/bluefly)
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=chocol4te/bluefly)](https://dependabot.com)
-[![](https://tokei.rs/b1/github/chocol4te/bluefly)](https://github.com/XAMPPRocky/tokei)
 
 ## Building
 
