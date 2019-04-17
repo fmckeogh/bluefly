@@ -34,6 +34,7 @@ const APP: () = {
     static mut BLE_RX_BUF: PacketBuffer = [0; MAX_PDU_SIZE + 1];
     static mut BASEBAND: Baseband<Logger> = ();
     static BLE_TIMER: pac::TIMER0 = ();
+    static PWM0: pac::PWM0 = ();
 
     #[init(resources = [BLE_TX_BUF, BLE_RX_BUF])]
     fn init() {
@@ -65,7 +66,7 @@ const APP: () = {
         let p0 = device.P0.split();
 
         let mut serial = {
-            let rxd = p0.p0_08.into_floating_input().degrade();
+            let rxd = p0.p0_09.into_floating_input().degrade();
             let txd = p0.p0_06.into_push_pull_output(Level::Low).degrade();
 
             let pins = hal::uarte::Pins {
@@ -116,15 +117,74 @@ const APP: () = {
         // Queue first baseband update
         cfg_timer(&device.TIMER0, Some(Duration::from_millis(1)));
 
+        device.PWM0.psel.out[0].write(|w| unsafe { w.pin().bits(0x08).connect().connected() });
+        device.PWM0.enable.write(|w| w.enable().enabled());
+        device.PWM0.mode.write(|w| w.updown().up());
+        device.PWM0.prescaler.write(|w| w.prescaler().div_32());
+        device
+            .PWM0
+            .countertop
+            .write(|w| unsafe { w.countertop().bits(8_000) }); // 20ms at div_32
+        device.PWM0.loop_.write(|w| w.cnt().disabled());
+        device
+            .PWM0
+            .decoder
+            .write(|w| w.load().common().mode().next_step());
+        device.PWM0.seq0.refresh.write(|w| w.cnt().continuous());
+        device
+            .PWM0
+            .seq0
+            .enddelay
+            .write(|w| unsafe { w.cnt().bits(0) });
+            let mut val: u16 = 7220;
+        device
+            .PWM0
+            .seq0
+            .cnt
+            .write(|w| unsafe { w.cnt().bits(1) });
+        device
+            .PWM0
+            .seq0
+            .ptr
+            .write(|w| unsafe { w.ptr().bits(((&mut val) as *mut _) as u32) });
+
+        device.PWM0.tasks_seqstart[0].write(|w| w.tasks_seqstart().trigger());
+        device
+            .PWM0
+            .tasks_nextstep
+            .write(|w| w.tasks_nextstep().trigger());
+
         BASEBAND = baseband;
         BLE_TIMER = device.TIMER0;
+        PWM0 = device.PWM0;
     }
 
-    #[interrupt(resources = [BLE_TIMER, BASEBAND])]
+    #[interrupt(resources = [BLE_TIMER, BASEBAND, PWM0])]
     fn RADIO() {
         if let Some(new_timeout) = resources.BASEBAND.interrupt() {
             cfg_timer(&resources.BLE_TIMER, Some(new_timeout));
         }
+
+        // 7495 = min
+        // 7240 = centre
+        // 6990 = max
+        let mut val: u16 = 6990 + (u16::from(255 - resources.BASEBAND.val()) * 2);
+        resources
+            .PWM0
+            .seq0
+            .cnt
+            .write(|w| unsafe { w.cnt().bits(1) });
+        resources
+            .PWM0
+            .seq0
+            .ptr
+            .write(|w| unsafe { w.ptr().bits(((&mut val) as *mut _) as u32) });
+
+        resources.PWM0.tasks_seqstart[0].write(|w| w.tasks_seqstart().trigger());
+        resources
+            .PWM0
+            .tasks_nextstep
+            .write(|w| w.tasks_nextstep().trigger());
     }
 
     #[interrupt(resources = [BLE_TIMER, BASEBAND])]

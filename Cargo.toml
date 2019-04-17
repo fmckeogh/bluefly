@@ -8,5 +8,6 @@ members = [
 opt-level = "s"
 
 [profile.release]
+lto = true
 opt-level = "s"
 debug = true

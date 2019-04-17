@@ -386,4 +386,8 @@ impl<L: Logger> Baseband<L> {
 
         cmd.next_update
     }
+
+    pub fn val(&mut self) -> u8 {
+        self.ll.val
+    }
 }

@@ -4,48 +4,100 @@
 // We need to import this crate explicitly so we have a panic handler
 extern crate panic_semihosting;
 
-pub mod ble;
-mod radio;
+mod logger;
 
 use {
-    crate::{
-        ble::{
-            beacon::Beacon,
-            link::{
-                ad_structure::AdStructure, AddressKind, DeviceAddress, LinkLayer, MAX_PDU_SIZE,
-            },
-        },
-        radio::{Baseband, BleRadio, PacketBuffer},
-    },
-    byteorder::{ByteOrder, LittleEndian},
-    core::{fmt::Write, time::Duration, u32},
-    embedded_hal::adc::{Channel, OneShot},
+    embedded_hal::adc::OneShot,
+    crate::logger::{BbqLogger, StampedLogger},
+    bbqueue::{bbq, BBQueue, Consumer},
+    core::fmt::Write,
+    cortex_m_semihosting::hprintln,
+    log::{info, LevelFilter},
     nrf52810_hal::{
         self as hal,
         gpio::Level,
         nrf52810_pac::{self as pac, UARTE0},
         prelude::*,
-        saadc::Saadc,
         uarte::{Baudrate, Parity, Uarte},
+        saadc::Saadc,
     },
     rtfm::app,
+    rubble::{
+        beacon::Beacon,
+        gatt::GattServer,
+        l2cap::{BleChannelMap, L2CAPState},
+        link::{
+            ad_structure::AdStructure, queue, AddressKind, DeviceAddress, HardwareInterface,
+            LinkLayer, Responder, MAX_PDU_SIZE,
+        },
+        security_manager::NoSecurity,
+        time::{Timer},
+    },
+    rubble_nrf52810::{
+        radio::{BleRadio, PacketBuffer},
+        timer::{BleTimer, StampSource},
+    },
 };
 
-type Logger = Uarte<UARTE0>;
+type Logger = StampedLogger<StampSource<pac::TIMER0>, BbqLogger>;
+
+/// Hardware interface for the BLE stack (nRF52810 implementation).
+pub struct HwNRf52810 {}
+
+impl HardwareInterface for HwNRf52810 {
+    type Timer = BleTimer<pac::TIMER0>;
+    type Tx = BleRadio;
+}
+
+/// Stores the global logger used by the `log` crate.
+static mut LOGGER: Option<logger::WriteLogger<Logger>> = None;
 
 #[app(device = nrf52810_hal::nrf52810_pac)]
 const APP: () = {
-    static mut BLE_TX_BUF: PacketBuffer = [0; MAX_PDU_SIZE + 1];
-    static mut BLE_RX_BUF: PacketBuffer = [0; MAX_PDU_SIZE + 1];
-    static mut BASEBAND: Baseband<Logger> = ();
+    static mut BLE_TX_BUF: PacketBuffer = [0; MAX_PDU_SIZE];
+    static mut BLE_RX_BUF: PacketBuffer = [0; MAX_PDU_SIZE];
+    static mut BLE_LL: LinkLayer<HwNRf52810> = ();
+    static mut BLE_R: Responder<BleChannelMap<GattServer<'static>, NoSecurity>> = ();
+    static mut RADIO: BleRadio = ();
     static mut BEACON_TIMER: pac::TIMER1 = ();
-    static BLE_TIMER: pac::TIMER0 = ();
+    static mut SERIAL: Uarte<UARTE0> = ();
+    static mut LOG_SINK: Consumer = ();
+
     static mut ADC: Saadc = ();
     static mut ADC_PIN: hal::gpio::p0::P0_02<hal::gpio::Input<hal::gpio::Floating>> = ();
-    static ADDR: DeviceAddress = ();
 
     #[init(resources = [BLE_TX_BUF, BLE_RX_BUF])]
     fn init() {
+        hprintln!("\n<< INIT >>\n").ok();
+
+        {
+            // On reset the internal high frequency clock is used, but starting the HFCLK task
+            // switches to the external crystal; this is needed for Bluetooth to work.
+
+            device
+                .CLOCK
+                .tasks_hfclkstart
+                .write(|w| unsafe { w.bits(1) });
+            while device.CLOCK.events_hfclkstarted.read().bits() == 0 {}
+        }
+
+        let ble_timer = BleTimer::init(device.TIMER0);
+
+        {
+            // Configure TIMER1 as the beacon timer. It's only used as a 16-bit timer.
+            let timer = &mut device.TIMER1;
+            timer.bitmode.write(|w| w.bitmode()._16bit());
+            // prescaler = 2^9    = 512
+            // 16 MHz / prescaler = 31_250 Hz
+            timer.prescaler.write(|w| unsafe { w.prescaler().bits(9) }); // 0-9
+            timer.intenset.write(|w| w.compare0().set());
+            timer.shorts.write(|w| w.compare0_clear().enabled());
+            timer.cc[0].write(|w| unsafe { w.bits(31_250 / 50) }); // ~50x per second
+            timer.tasks_clear.write(|w| unsafe { w.bits(1) });
+
+            timer.tasks_start.write(|w| unsafe { w.bits(1) });
+        }
+
         let p0 = device.P0.split();
 
         let mut serial = {
@@ -65,124 +117,87 @@ const APP: () = {
         };
         writeln!(serial, "\n--- INIT ---").unwrap();
 
-        {
-            // On reset the internal high frequency clock is used, but starting the HFCLK task
-            // switches to the external crystal; this is needed for Bluetooth to work.
+        let radio = BleRadio::new(device.RADIO, resources.BLE_TX_BUF, resources.BLE_RX_BUF);
 
-            device
-                .CLOCK
-                .tasks_hfclkstart
-                .write(|w| unsafe { w.bits(1) });
-            while device.CLOCK.events_hfclkstarted.read().bits() == 0 {}
+        let log_stamper = ble_timer.create_stamp_source();
+        let (tx, log_sink) = bbq![10000].unwrap().split();
+        let logger = StampedLogger::new(BbqLogger::new(tx), log_stamper);
+
+        let log = logger::WriteLogger::new(logger);
+        // Safe, since we're the only thread and interrupts are off
+        unsafe {
+            LOGGER = Some(log);
+            log::set_logger(LOGGER.as_ref().unwrap()).unwrap();
         }
+        log::set_max_level(LevelFilter::max());
 
-        {
-            // Configure TIMER1 as the beacon timer. It's only a 16-bit timer.
-            let timer = &mut device.TIMER1;
-            timer.bitmode.write(|w| w.bitmode()._16bit());
-            // prescaler = 2^9    = 512
-            // 16 MHz / prescaler = 31_250 Hz
-            timer.prescaler.write(|w| unsafe { w.prescaler().bits(9) }); // 0-9
-            timer.intenset.write(|w| w.compare0().set());
-            timer.shorts.write(|w| w.compare0_clear().enabled());
-            timer.cc[0].write(|w| unsafe { w.bits(31_250 / 50) }); // 50 times a second
-            timer.tasks_clear.write(|w| unsafe { w.bits(1) });
+        info!("READY");
 
-            timer.tasks_start.write(|w| unsafe { w.bits(1) });
-        }
+        // Create TX/RX queues
+        let (tx, _tx_cons) = queue::create(bbq![1024].unwrap());
+        let (_rx_prod, rx) = queue::create(bbq![1024].unwrap());
 
-        let device_address = {
-            let mut devaddr = [0u8; 6];
-            let devaddr_lo = device.FICR.deviceaddr[0].read().bits();
-            let devaddr_hi = device.FICR.deviceaddr[1].read().bits() as u16;
-            LittleEndian::write_u32(&mut devaddr, devaddr_lo);
-            LittleEndian::write_u16(&mut devaddr[4..], devaddr_hi);
+        // Create the actual BLE stack objects
+        let ll = LinkLayer::<HwNRf52810>::new(DeviceAddress::new([169, 255, 235, 206, 50, 121], AddressKind::Random), ble_timer);
 
-            writeln!(serial, "devaddr: {:?}", devaddr).unwrap();
-
-            let devaddr_type = if device
-                .FICR
-                .deviceaddrtype
-                .read()
-                .deviceaddrtype()
-                .is_public()
-            {
-                AddressKind::Public
-            } else {
-                AddressKind::Random
-            };
-            DeviceAddress::new(devaddr, devaddr_type)
-        };
-
-        let ll = LinkLayer::with_logger(device_address, serial);
-
-        let baseband = Baseband::new(
-            BleRadio::new(device.RADIO, resources.BLE_TX_BUF),
-            resources.BLE_RX_BUF,
-            ll,
+        let resp = Responder::new(
+            tx,
+            rx,
+            L2CAPState::new(BleChannelMap::with_attributes(GattServer::new())),
         );
 
-        // Queue first baseband update
-        cfg_timer(&device.TIMER0, Some(Duration::from_millis(1)));
-
+        RADIO = radio;
+        BLE_LL = ll;
+        BLE_R = resp;
         BEACON_TIMER = device.TIMER1;
-        BASEBAND = baseband;
-        BLE_TIMER = device.TIMER0;
-        ADDR = device_address;
-        ADC = Saadc::new(device.SAADC);
+        SERIAL = serial;
+        LOG_SINK = log_sink;
+
+        ADC = device.SAADC.constrain();
         ADC_PIN = p0.p0_02.into_floating_input();
     }
 
-    #[interrupt(resources = [BLE_TIMER, BASEBAND])]
+    #[interrupt(resources = [RADIO, BLE_LL])]
     fn RADIO() {
-        if let Some(new_timeout) = resources.BASEBAND.interrupt() {
-            cfg_timer(&resources.BLE_TIMER, Some(new_timeout));
-        }
+        let next_update = resources
+            .RADIO
+            .recv_interrupt(resources.BLE_LL.timer().now(), &mut resources.BLE_LL);
+        resources.BLE_LL.timer().configure_interrupt(next_update);
     }
 
     /// Fire the beacon.
-    #[interrupt(resources = [BEACON_TIMER, BASEBAND, ADDR, ADC, ADC_PIN])]
+    #[interrupt(resources = [BEACON_TIMER, RADIO, ADC, ADC_PIN])]
     fn TIMER1() {
         // acknowledge event
         resources.BEACON_TIMER.events_compare[0].reset();
 
-        let log = resources.BASEBAND.logger();
-        writeln!(log, "-> beacon").unwrap();
+        let device_address = DeviceAddress::new([169, 255, 235, 206, 50, 121], AddressKind::Random);
 
-        let val: u16 = resources.ADC.read(resources.ADC_PIN).unwrap() + 10;
+        let val: u16 = resources.ADC.read(resources.ADC_PIN).unwrap();
 
-        let beacon = Beacon::new(
-            *resources.ADDR,
-            &[AdStructure::Unknown {
+        let beacon = Beacon::new(device_address, &[AdStructure::Unknown {
                 ty: 0xFF,
                 data: &[(val / 38) as u8],
-            }],
-        )
-        .unwrap();
-        beacon.broadcast(resources.BASEBAND.transmitter());
+            }]).unwrap();
+
+        beacon.broadcast(&mut *resources.RADIO);
+    }
+
+    #[idle(resources = [LOG_SINK, SERIAL, BLE_R])]
+    fn idle() -> ! {
+        // Drain the logging buffer through the serial connection
+        loop {
+            while let Ok(grant) = resources.LOG_SINK.read() {
+                for chunk in grant.buf().chunks(255) {
+                    resources.SERIAL.write(chunk).unwrap();
+                }
+
+                resources.LOG_SINK.release(grant.buf().len(), grant);
+            }
+
+            if resources.BLE_R.has_work() {
+                resources.BLE_R.process_one().unwrap();
+            }
+        }
     }
 };
-
-/// Reconfigures TIMER0 to raise an interrupt after `duration` has elapsed.
-///
-/// TIMER0 is stopped if `duration` is `None`.
-///
-/// Note that if the timer has already queued an interrupt, the task will still be run after the
-/// timer is stopped by this function.
-fn cfg_timer(t: &pac::TIMER0, duration: Option<Duration>) {
-    // Timer activation code is also copied from the `nrf51-hal` crate.
-    if let Some(duration) = duration {
-        assert!(duration.as_secs() < ((u32::MAX - duration.subsec_micros()) / 1_000_000) as u64);
-        let us = (duration.as_secs() as u32) * 1_000_000 + duration.subsec_micros();
-        t.cc[0].write(|w| unsafe { w.bits(us) });
-        // acknowledge last compare event (FIXME unnecessary?)
-        t.events_compare[0].reset();
-        t.tasks_clear.write(|w| unsafe { w.bits(1) });
-        t.tasks_start.write(|w| unsafe { w.bits(1) });
-    } else {
-        t.tasks_stop.write(|w| unsafe { w.bits(1) });
-        t.tasks_clear.write(|w| unsafe { w.bits(1) });
-        // acknowledge last compare event (FIXME unnecessary?)
-        t.events_compare[0].reset();
-    }
-}

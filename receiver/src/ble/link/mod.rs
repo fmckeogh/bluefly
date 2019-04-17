@@ -212,6 +212,7 @@ pub struct LinkLayer<L: Logger> {
     dev_addr: DeviceAddress,
     state: State,
     logger: L,
+    pub val: u8,
 }
 
 impl LinkLayer<NoopLogger> {
@@ -229,6 +230,7 @@ impl<L: Logger> LinkLayer<L> {
             dev_addr,
             logger,
             state: State::Standby,
+            val: 0,
         }
     }
 
@@ -284,13 +286,14 @@ impl<L: Logger> LinkLayer<L> {
                     _priv,
                 } => {
                     if advertiser_addr
-                        == &DeviceAddress::new([207, 108, 100, 169, 234, 222], AddressKind::Random)
+                        == &DeviceAddress::new([169, 255, 235, 206, 50, 121], AddressKind::Random)
                     {
                         trace!(
                             self.logger,
                             "got advertisement from controller, payload: {:?}",
                             payload
                         );
+                        self.val = payload[5];
                     }
                 }
                 _ => (),

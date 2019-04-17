@@ -31,6 +31,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "bbqueue"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "bitflags"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -46,20 +51,29 @@ version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "cfg-if"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "controller"
 version = "0.0.1"
 dependencies = [
+ "bbqueue 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "byteorder 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "cortex-m 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-rt 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-rtfm 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-semihosting 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fpa 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nrf52810-hal 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=f92e4ea)",
+ "nrf52810-hal 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=6c1ce70)",
  "panic-semihosting 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rubble 0.1.0 (git+https://github.com/jonas-schievink/rubble.git?rev=640b705)",
+ "rubble-nrf52810 0.1.0 (git+https://github.com/jonas-schievink/rubble.git?rev=640b705)",
  "uuid 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -186,6 +200,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "log"
+version = "0.4.6"
+source = "git+https://github.com/rust-lang-nursery/log.git?rev=75043f9#75043f9ba3f5ca09145654eeffb1957bb524eb46"
+dependencies = [
+ "cfg-if 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "log"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "cfg-if 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "nb"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -193,7 +223,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "nrf52-hal-common"
 version = "0.7.0"
-source = "git+https://github.com/chocol4te/nrf52-hal?rev=f92e4ea#f92e4eab8d0fa2f105a7ddfe8579cc6b2a2e3516"
+source = "git+https://github.com/nrf-rs/nrf52-hal?rev=6c1ce70#6c1ce70ff4353fc229e0e04f1038cb2fa9dd168f"
 dependencies = [
  "cast 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -208,13 +238,13 @@ dependencies = [
 [[package]]
 name = "nrf52810-hal"
 version = "0.7.0"
-source = "git+https://github.com/chocol4te/nrf52-hal?rev=f92e4ea#f92e4eab8d0fa2f105a7ddfe8579cc6b2a2e3516"
+source = "git+https://github.com/nrf-rs/nrf52-hal?rev=6c1ce70#6c1ce70ff4353fc229e0e04f1038cb2fa9dd168f"
 dependencies = [
  "cast 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nrf52-hal-common 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=f92e4ea)",
+ "nrf52-hal-common 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=6c1ce70)",
  "nrf52810-pac 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "void 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -314,9 +344,30 @@ dependencies = [
  "embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fpa 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nrf52810-hal 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=f92e4ea)",
+ "nrf52810-hal 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=6c1ce70)",
  "panic-semihosting 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rubble"
+version = "0.1.0"
+source = "git+https://github.com/jonas-schievink/rubble.git?rev=640b705#640b7059987ad46e78ce02f63242f7f453e9c748"
+dependencies = [
+ "bbqueue 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "byteorder 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.6 (git+https://github.com/rust-lang-nursery/log.git?rev=75043f9)",
+ "uuid 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rubble-nrf52810"
+version = "0.1.0"
+source = "git+https://github.com/jonas-schievink/rubble.git?rev=640b705#640b7059987ad46e78ce02f63242f7f453e9c748"
+dependencies = [
+ "nrf52810-hal 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=6c1ce70)",
+ "rubble 0.1.0 (git+https://github.com/jonas-schievink/rubble.git?rev=640b705)",
 ]
 
 [[package]]
@@ -393,9 +444,11 @@ dependencies = [
 "checksum aligned 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d3a316c7ea8e1e9ece54862c992def5a7ac14de9f5832b69d71760680efeeefa"
 "checksum as-slice 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "293dac66b274fab06f95e7efb05ec439a6b70136081ea522d270bc351ae5bb27"
 "checksum bare-metal 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "a3caf393d93b2d453e80638d0674597020cef3382ada454faacd43d1a55a735a"
+"checksum bbqueue 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "fd19d1f2d21e6f6de95a61ea33bcfda30f30ac90ac3636d6d83a14baef4310f4"
 "checksum bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "228047a76f468627ca71776ecdebd732a3423081fcf5125585bcd7c49886ce12"
 "checksum byteorder 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "a019b10a2a7cdeb292db131fc8113e57ea2a908f6e7894b0c3c671893b65dbeb"
 "checksum cast 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "926013f2860c46252efceabb19f4a6b308197505082c609025aa6706c011d427"
+"checksum cfg-if 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)" = "11d43355396e872eefb45ce6342e4374ed7bc2b3a502d1b28e36d6e23c05d1f4"
 "checksum cortex-m 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)" = "dab2164a0fc216781a47fc343347365112ae6917421d3fa4bac6faf0fbaaaec7"
 "checksum cortex-m 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f3c18719fdc57db65668bfc977db9a0fa1a41d718c5d9cd4f652c9d4b0e0956a"
 "checksum cortex-m-rt 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)" = "7e1ccc9052352415ec4e3f762f4541098d012016f9354a1a5b2dede39b67f426"
@@ -409,9 +462,11 @@ dependencies = [
 "checksum generic-array 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3c0f28c2f5bfb5960175af447a2da7c18900693738343dc896ffbcabd9839592"
 "checksum hash32 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "12d790435639c06a7b798af9e1e331ae245b7ef915b92f70a39b4cf8c00686af"
 "checksum heapless 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "56b960caff1a46f1fb3c1eb05f0575ac21c6248364ebebde11b11116e099881c"
+"checksum log 0.4.6 (git+https://github.com/rust-lang-nursery/log.git?rev=75043f9)" = "<none>"
+"checksum log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)" = "c84ec4b527950aa83a329754b01dbe3f58361d1c5efacd1f6d68c494d08a17c6"
 "checksum nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "69f380b5fe9fab8c0d7a6a99cda23e2cc0463bedb2cbc3aada0813b98496ecdc"
-"checksum nrf52-hal-common 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=f92e4ea)" = "<none>"
-"checksum nrf52810-hal 0.7.0 (git+https://github.com/chocol4te/nrf52-hal?rev=f92e4ea)" = "<none>"
+"checksum nrf52-hal-common 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=6c1ce70)" = "<none>"
+"checksum nrf52810-hal 0.7.0 (git+https://github.com/nrf-rs/nrf52-hal?rev=6c1ce70)" = "<none>"
 "checksum nrf52810-pac 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f087616ef0a21481ae172bf363a39cdbe1e146dcca91b5d548c41e1ba9bf8c1f"
 "checksum owned-singleton 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "21aa378869c97c7db706a4c576cf0ce8258dc7e0e1ad25a97ee5aba1fd4eed83"
 "checksum owned-singleton-macros 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8d5c2ac071b95017bf70a5b607037fb0ef4abfa663fdf6cac8fbf36af9756ee3"
@@ -422,6 +477,8 @@ dependencies = [
 "checksum rand 0.5.6 (registry+https://github.com/rust-lang/crates.io-index)" = "c618c47cd3ebd209790115ab837de41425723956ad3ce2e6a7f09890947cacb9"
 "checksum rand_core 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7a6fdeb83b075e8266dcc8762c22776f6877a63111121f5f8c7411e5be7eed4b"
 "checksum rand_core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d0e7a549d590831370895ab7ba4ea0c1b6b011d106b5ff2da6eee112615e6dc0"
+"checksum rubble 0.1.0 (git+https://github.com/jonas-schievink/rubble.git?rev=640b705)" = "<none>"
+"checksum rubble-nrf52810 0.1.0 (git+https://github.com/jonas-schievink/rubble.git?rev=640b705)" = "<none>"
 "checksum rustc_version 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "138e3e0acb6c9fb258b19b67cb8abd63c00679d2851805ea151465464fe9030a"
 "checksum semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
 "checksum semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
