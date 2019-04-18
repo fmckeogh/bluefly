@@ -7,19 +7,19 @@ extern crate panic_semihosting;
 mod logger;
 
 use {
-    embedded_hal::adc::OneShot,
     crate::logger::{BbqLogger, StampedLogger},
     bbqueue::{bbq, BBQueue, Consumer},
     core::fmt::Write,
     cortex_m_semihosting::hprintln,
+    embedded_hal::adc::OneShot,
     log::{info, LevelFilter},
     nrf52810_hal::{
         self as hal,
         gpio::Level,
         nrf52810_pac::{self as pac, UARTE0},
         prelude::*,
-        uarte::{Baudrate, Parity, Uarte},
         saadc::Saadc,
+        uarte::{Baudrate, Parity, Uarte},
     },
     rtfm::app,
     rubble::{
@@ -31,7 +31,7 @@ use {
             LinkLayer, Responder, MAX_PDU_SIZE,
         },
         security_manager::NoSecurity,
-        time::{Timer},
+        time::Timer,
     },
     rubble_nrf52810::{
         radio::{BleRadio, PacketBuffer},
@@ -138,7 +138,10 @@ const APP: () = {
         let (_rx_prod, rx) = queue::create(bbq![1024].unwrap());
 
         // Create the actual BLE stack objects
-        let ll = LinkLayer::<HwNRf52810>::new(DeviceAddress::new([169, 255, 235, 206, 50, 121], AddressKind::Random), ble_timer);
+        let ll = LinkLayer::<HwNRf52810>::new(
+            DeviceAddress::new([169, 255, 235, 206, 50, 121], AddressKind::Random),
+            ble_timer,
+        );
 
         let resp = Responder::new(
             tx,
@@ -175,10 +178,14 @@ const APP: () = {
 
         let val: u16 = resources.ADC.read(resources.ADC_PIN).unwrap();
 
-        let beacon = Beacon::new(device_address, &[AdStructure::Unknown {
+        let beacon = Beacon::new(
+            device_address,
+            &[AdStructure::Unknown {
                 ty: 0xFF,
-                data: &[(val / 38) as u8],
-            }]).unwrap();
+                data: &[((val / 13) - 250) as u8],
+            }],
+        )
+        .unwrap();
 
         beacon.broadcast(&mut *resources.RADIO);
     }
