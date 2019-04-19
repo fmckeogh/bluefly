@@ -10,7 +10,6 @@ use {
     crate::logger::{BbqLogger, StampedLogger},
     bbqueue::{bbq, BBQueue, Consumer},
     core::fmt::Write,
-    cortex_m_semihosting::hprintln,
     embedded_hal::adc::OneShot,
     log::{info, LevelFilter},
     nrf52810_hal::{
@@ -18,7 +17,7 @@ use {
         gpio::Level,
         nrf52810_pac::{self as pac, UARTE0},
         prelude::*,
-        saadc::Saadc,
+        saadc::{Gain, Oversample, Reference, Resistor, Resolution, Saadc, SaadcConfig, Time},
         uarte::{Baudrate, Parity, Uarte},
     },
     rtfm::app,
@@ -68,7 +67,7 @@ const APP: () = {
 
     #[init(resources = [BLE_TX_BUF, BLE_RX_BUF])]
     fn init() {
-        hprintln!("\n<< INIT >>\n").ok();
+        //hprintln!("\n<< INIT >>\n").ok();
 
         {
             // On reset the internal high frequency clock is used, but starting the HFCLK task
@@ -149,6 +148,19 @@ const APP: () = {
             L2CAPState::new(BleChannelMap::with_attributes(GattServer::new())),
         );
 
+        let adc = {
+            let config = SaadcConfig {
+                resolution: Resolution::_14BIT,
+                oversample: Oversample::OVER256X,
+                reference: Reference::VDD1_4,
+                gain: Gain::GAIN1_4,
+                resistor: Resistor::BYPASS,
+                time: Time::_40US,
+            };
+
+            Saadc::new(device.SAADC, config)
+        };
+
         RADIO = radio;
         BLE_LL = ll;
         BLE_R = resp;
@@ -156,7 +168,7 @@ const APP: () = {
         SERIAL = serial;
         LOG_SINK = log_sink;
 
-        ADC = device.SAADC.constrain();
+        ADC = adc;
         ADC_PIN = p0.p0_02.into_floating_input();
     }
 
@@ -178,11 +190,13 @@ const APP: () = {
 
         let val: u16 = resources.ADC.read(resources.ADC_PIN).unwrap();
 
+        info!("read val: {}", val);
+
         let beacon = Beacon::new(
             device_address,
             &[AdStructure::Unknown {
                 ty: 0xFF,
-                data: &[((val / 13) - 250) as u8],
+                data: &[(val / 64) as u8],
             }],
         )
         .unwrap();

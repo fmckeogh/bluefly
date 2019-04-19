@@ -42,33 +42,46 @@
 //! must still be sent, of course).
 
 use {
-    crate::ble::{
-        link::{
-            advertising, data, LinkLayer, RadioCmd, Transmitter, ADVERTISING_ADDRESS, CRC_POLY,
-            CRC_PRESET, MAX_PDU_SIZE,
-        },
-        log::Logger,
-        phy::{AdvertisingChannelIndex, DataChannelIndex},
-    },
-    core::time::Duration,
     nrf52810_hal::nrf52810_pac::{radio::state::STATER, RADIO},
+    rubble::{
+        beacon::{BeaconScanner, ScanCallback},
+        link::{
+            advertising, data, filter::AddressFilter, NextUpdate, RadioCmd, Transmitter, CRC_POLY,
+            MAX_PAYLOAD_SIZE, MAX_PDU_SIZE,
+        },
+        phy::{AdvertisingChannel, DataChannel},
+        time::{Duration, Instant},
+    },
 };
 
-/// The buffer has an extra Byte because the 16-bit PDU header needs to be split in 3 Bytes for the
-/// radio to understand it (S0 = pre-Length fields, Length, S1 = post-Length fields).
-pub type PacketBuffer = [u8; MAX_PDU_SIZE + 1];
+/// A packet buffer that can hold header and payload of any advertising or data channel packet.
+pub type PacketBuffer = [u8; MAX_PDU_SIZE];
 
 // BLE inter frame spacing in microseconds.
 //const BLE_TIFS: u8 = 150;
 
+/// An interface to the nRF radio in BLE mode.
 pub struct BleRadio {
+    /// `true` if the radio is operating on an advertising channel, `false` if it's a data channel.
+    advertising: bool,
     radio: RADIO,
     tx_buf: &'static mut PacketBuffer,
+
+    /// Receive buffer.
+    ///
+    /// This is an `Option` because we need to pass a `&mut BleRadio` to the BLE stack while still
+    /// having access to this buffer.
+    rx_buf: Option<&'static mut PacketBuffer>,
 }
 
 impl BleRadio {
+    /// Initializes the radio in BLE mode and takes ownership of the RX and TX buffers.
     // TODO: Use type-safe clock configuration to ensure that chip uses ext. crystal
-    pub fn new(radio: RADIO, tx_buf: &'static mut PacketBuffer) -> Self {
+    pub fn new(
+        radio: RADIO,
+        tx_buf: &'static mut PacketBuffer,
+        rx_buf: &'static mut PacketBuffer,
+    ) -> Self {
         assert!(radio.state.read().state().is_disabled());
 
         radio.mode.write(|w| w.mode().ble_1mbit());
@@ -78,7 +91,7 @@ impl BleRadio {
             radio.pcnf1.write(|w| {
                 // no packet length limit
                 w.maxlen()
-                    .bits(36)
+                    .bits(MAX_PAYLOAD_SIZE as u8)
                     // 3-Byte Base Address + 1-Byte Address Prefix
                     .balen()
                     .bits(3)
@@ -93,7 +106,7 @@ impl BleRadio {
             });
             radio
                 .crcpoly
-                .write(|w| w.crcpoly().bits(CRC_POLY & 0xFFFFFF));
+                .write(|w| w.crcpoly().bits(CRC_POLY & 0x00FFFFFF));
 
             // Configure logical address 0 as the canonical advertising address.
             // Base addresses are up to 32 bits in size. However, an 8 bit Address Prefix is
@@ -101,10 +114,12 @@ impl BleRadio {
             // BASE0 has, apparently, undocumented semantics: It is a proper 32-bit register, but
             // it ignores the *lowest* 8 bit and instead transmits the upper 24 as the low 24 bits
             // of the Access Address. Shift address up to fix this.
-            radio.base0.write(|w| w.bits(ADVERTISING_ADDRESS << 8));
+            radio
+                .base0
+                .write(|w| w.bits(advertising::ACCESS_ADDRESS << 8));
             radio
                 .prefix0
-                .write(|w| w.ap0().bits((ADVERTISING_ADDRESS >> 24) as u8));
+                .write(|w| w.ap0().bits((advertising::ACCESS_ADDRESS >> 24) as u8));
         }
 
         // FIXME: No TIFS hardware support for now. Revisit when precise semantics are clear.
@@ -129,12 +144,134 @@ impl BleRadio {
         // We can now start the TXEN/RXEN tasks and the radio will do the rest and return to the
         // disabled state.
 
-        Self { radio, tx_buf }
+        Self {
+            advertising: false,
+            radio,
+            tx_buf,
+            rx_buf: Some(rx_buf),
+        }
     }
 
     /// Returns the current radio state.
     pub fn state(&self) -> STATER {
         self.radio.state.read().state()
+    }
+
+    /// Configures the Radio for (not) receiving data according to `cmd`.
+    pub fn configure_receiver(&mut self, cmd: RadioCmd) {
+        // Disable `DISABLED` interrupt, effectively stopping reception
+        self.radio.intenclr.write(|w| w.disabled().clear());
+
+        // Acknowledge left-over disable event
+        self.radio.events_disabled.reset();
+        // Disable radio
+        self.radio.tasks_disable.write(|w| unsafe { w.bits(1) });
+        // Then wait until disable event is triggered
+        while self.radio.events_disabled.read().bits() == 0 {}
+        // And acknowledge it
+        self.radio.events_disabled.reset();
+
+        match cmd {
+            RadioCmd::Off => {}
+            RadioCmd::ListenAdvertising { channel } => {
+                self.prepare_txrx_advertising(channel);
+
+                let rx_buf = (*self.rx_buf.as_mut().unwrap()) as *mut _ as u32;
+                self.radio.packetptr.write(|w| unsafe { w.bits(rx_buf) });
+
+                // Enable `DISABLED` interrupt (packet fully received)
+                self.radio.intenset.write(|w| w.disabled().set());
+
+                // Match on logical address 0 only
+                self.radio.rxaddresses.write(|w| w.addr0().enabled());
+
+                // ...and enter RX mode
+                self.radio.tasks_rxen.write(|w| unsafe { w.bits(1) });
+            }
+            RadioCmd::ListenData {
+                channel,
+                access_address,
+                crc_init,
+            } => {
+                self.prepare_txrx_data(channel, access_address, crc_init);
+
+                // Enforce T_IFS in hardware and enable the required shortcuts.
+                // The radio will go into `TXIDLE` state automatically after receiving a packet.
+                self.radio
+                    .tifs
+                    .write(|w| unsafe { w.bits(Duration::T_IFS.as_micros()) });
+                self.radio.shorts.write(|w| {
+                    w.end_disable()
+                        .enabled()
+                        .disabled_txen()
+                        .enabled()
+                        .ready_start()
+                        .enabled()
+                });
+
+                let rx_buf = (*self.rx_buf.as_mut().unwrap()) as *mut _ as u32;
+                self.radio.packetptr.write(|w| unsafe { w.bits(rx_buf) });
+
+                // Enable `DISABLED` interrupt (packet fully received)
+                self.radio.intenset.write(|w| w.disabled().set());
+
+                // Match on logical address 1 only
+                self.radio.rxaddresses.write(|w| w.addr1().enabled());
+
+                // ...and enter RX mode
+                self.radio.tasks_rxen.write(|w| unsafe { w.bits(1) });
+            }
+        }
+    }
+
+    /// Call this when the `RADIO` interrupt fires.
+    ///
+    /// Automatically reconfigures the radio according to the `RadioCmd` returned by the BLE stack.
+    ///
+    /// Returns when the `update` method should be called the next time.
+    pub fn recv_interrupt<C, F>(
+        &mut self,
+        _timestamp: Instant,
+        scanner: &mut BeaconScanner<C, F>,
+    ) -> NextUpdate
+    where
+        C: ScanCallback,
+        F: AddressFilter,
+    {
+        if self.radio.events_disabled.read().bits() == 0 {
+            return NextUpdate::Keep;
+        }
+
+        // Acknowledge DISABLED event:
+        self.radio.events_disabled.reset();
+
+        let crc_ok = self.radio.crcstatus.read().crcstatus().is_crcok();
+
+        let cmd = if self.advertising {
+            // When we get here, the radio must have transitioned to DISABLED state.
+            assert!(self.state().is_disabled());
+
+            let header = advertising::Header::parse(*self.rx_buf.as_ref().unwrap());
+
+            // check that `payload_length` is in bounds
+            let rx_buf = self.rx_buf.take().unwrap();
+            let payload = match rx_buf.get(2..2 + header.payload_length() as usize) {
+                Some(pl) => pl,
+                None => {
+                    // `payload_length` is too large, ignore the packet
+                    self.radio.tasks_rxen.write(|w| unsafe { w.bits(1) });
+                    return NextUpdate::Keep;
+                }
+            };
+            let cmd = scanner.process_adv_packet(header, payload, crc_ok);
+            self.rx_buf = Some(rx_buf);
+            cmd
+        } else {
+            panic!()
+        };
+
+        self.configure_receiver(cmd.radio);
+        cmd.next_update
     }
 
     /// Perform preparations to receive or send on an advertising channel.
@@ -149,13 +286,10 @@ impl BleRadio {
     /// `packetptr` must be pointed to the RX buffer.
     ///
     /// Of course, other tasks may also be performed.
-    fn prepare_txrx_advertising(&mut self, channel: AdvertisingChannelIndex) {
-        unsafe {
-            // Disable all interrupts so we don't try to process a (partially) received packet
-            // at a weird time.
-            // XXX XXX XXX adding this drastically reduces the number of crashes!
-            //self.radio.intenclr.write(|w| w.disabled().clear());
+    fn prepare_txrx_advertising(&mut self, channel: AdvertisingChannel) {
+        self.advertising = true;
 
+        unsafe {
             // Acknowledge left-over disable event
             self.radio.events_disabled.reset();
 
@@ -165,8 +299,6 @@ impl BleRadio {
 
                 // Then wait until disable event is triggered
                 while self.radio.events_disabled.read().bits() == 0 {}
-                // XXX this would trigger the interrupt!
-                // XXX that means if we're receiving while in this function, things can go badly
             }
         }
 
@@ -176,15 +308,43 @@ impl BleRadio {
         unsafe {
             self.radio
                 .pcnf0
-                .write(|w| w.s0len().bit(true).lflen().bits(6).s1len().bits(2));
+                .write(|w| w.s0len().bit(true).lflen().bits(8).s1len().bits(0));
 
             self.radio
                 .datawhiteiv
                 .write(|w| w.datawhiteiv().bits(channel.whitening_iv()));
-            self.radio.crcinit.write(|w| w.crcinit().bits(CRC_PRESET));
+            self.radio
+                .crcinit
+                .write(|w| w.crcinit().bits(advertising::CRC_PRESET));
             self.radio
                 .frequency
                 .write(|w| w.frequency().bits((channel.freq() - 2400) as u8));
+        }
+    }
+
+    fn prepare_txrx_data(&mut self, channel: DataChannel, access_address: u32, crc_init: u32) {
+        self.advertising = false;
+
+        unsafe {
+            self.radio
+                .pcnf0
+                .write(|w| w.s0len().bit(true).lflen().bits(8).s1len().bits(0));
+
+            self.radio
+                .datawhiteiv
+                .write(|w| w.datawhiteiv().bits(channel.whitening_iv()));
+            self.radio
+                .crcinit
+                .write(|w| w.crcinit().bits(crc_init & 0x00FFFFFF));
+            self.radio
+                .frequency
+                .write(|w| w.frequency().bits((channel.freq() - 2400) as u8));
+
+            // Address #1 is our data channel access address
+            self.radio.base1.write(|w| w.bits(access_address << 8));
+            self.radio
+                .prefix0
+                .write(|w| w.ap1().bits((access_address >> 24) as u8));
         }
     }
 
@@ -219,23 +379,16 @@ impl BleRadio {
 
 impl Transmitter for BleRadio {
     fn tx_payload_buf(&mut self) -> &mut [u8] {
-        // Leave 3 Bytes for the data/advertising PDU header. The header is actually only 2 on-air
-        // Bytes, but because of the way the radio works, `Length` must get its own Byte in RAM.
-        &mut self.tx_buf[3..]
+        // Leave 2 Bytes for the data/advertising PDU header.
+        &mut self.tx_buf[2..]
     }
 
-    fn transmit_advertising(
-        &mut self,
-        header: advertising::Header,
-        channel: AdvertisingChannelIndex,
-    ) {
+    fn transmit_advertising(&mut self, header: advertising::Header, channel: AdvertisingChannel) {
         let raw_header = header.to_u16();
         // S0 = 8 bits (LSB)
         self.tx_buf[0] = raw_header as u8;
-        // Length = 6 bits
+        // Length = 6 bits, followed by 2 RFU bits (0)
         self.tx_buf[1] = header.payload_length();
-        // S1 = 2 unused bits = 0
-        self.tx_buf[2] = 0;
 
         self.prepare_txrx_advertising(channel);
 
@@ -252,142 +405,30 @@ impl Transmitter for BleRadio {
         &mut self,
         _access_address: u32,
         _crc_iv: u32,
-        _header: data::Header,
-        _channel: DataChannelIndex,
+        header: data::Header,
+        _channel: DataChannel,
     ) {
-        unimplemented!();
-        //self.transmit(access_address, crc_iv, channel.whitening_iv(), channel.freq());
-    }
-}
+        let raw_header = header.to_u16();
+        // S0 = 8 bits (LSB)
+        self.tx_buf[0] = raw_header as u8;
+        // Length = 8 bits (or fewer, for BT versions <4.2)
+        self.tx_buf[1] = header.payload_length();
 
-pub struct Baseband<L: Logger> {
-    radio: BleRadio,
-    rx_buf: &'static mut PacketBuffer,
-    receiving: bool,
-    ll: LinkLayer<L>,
-}
+        // Set transmission address:
+        // Logical addr. 1 uses BASE1 + PREFIX1, which is set to the data channel address
+        self.radio
+            .txaddress
+            .write(|w| unsafe { w.txaddress().bits(1) });
 
-impl<L: Logger> Baseband<L> {
-    pub fn new(radio: BleRadio, rx_buf: &'static mut PacketBuffer, ll: LinkLayer<L>) -> Self {
-        Self {
-            radio,
-            rx_buf,
-            ll,
-            receiving: false,
-        }
-    }
+        // "The CPU should reconfigure this pointer every time before the RADIO is started via
+        // the START task."
+        self.radio
+            .packetptr
+            .write(|w| unsafe { w.bits(self.tx_buf as *const _ as u32) });
 
-    pub fn transmitter(&mut self) -> &mut BleRadio {
-        &mut self.radio
-    }
-
-    pub fn logger(&mut self) -> &mut L {
-        self.ll.logger()
-    }
-
-    /// Call this when the `RADIO` interrupt fires.
-    ///
-    /// Returns a duration if the BLE stack requested that the next update time be changed. Returns
-    /// `None` if the update time should stay as-is from the last `update` call.
-    pub fn interrupt(&mut self) -> Option<Duration> {
-        self.radio.radio.intenclr.write(|w| w.disabled().clear()); // does nothing
-
-        // Acknowledge the DISABLED event that fired this interrupt.
-        self.radio.radio.events_disabled.reset();
-
-        assert!(self.radio.state().is_disabled());
-
-        // This is only fired for a DISABLED event.
-        if !self.receiving {
-            unreachable!();
-        }
-
-        let next_update = if self.radio.radio.crcstatus.read().crcstatus().is_crcok() {
-            let header = advertising::Header::parse(self.rx_buf);
-
-            // TODO check that `payload_length` is sane
-
-            let cmd = {
-                let payload = &self.rx_buf[3..3 + header.payload_length() as usize];
-                self.ll.process_adv_packet(&mut self.radio, header, payload)
-            };
-            self.configure_receiver(cmd.radio);
-            cmd.next_update
-        } else {
-            // Re-enter recv mode
-            self.radio.radio.tasks_rxen.write(|w| unsafe { w.bits(1) });
-            self.radio.radio.intenset.write(|w| w.disabled().set());
-
-            None
-        };
-
-        next_update
-    }
-
-    /// Configures the Radio for (not) receiving data according to `cmd`.
-    fn configure_receiver(&mut self, cmd: RadioCmd) {
-        // Note that when this is called, the radio might be actively receiving
-        // stuff.
-        match cmd {
-            RadioCmd::Off => {
-                // Disable `DISABLED` interrupt, effectively stopping reception
-                self.radio.radio.intenclr.write(|w| w.disabled().clear());
-
-                // Acknowledge left-over disable event
-                self.radio.radio.events_disabled.reset();
-                // Disable radio
-                self.radio
-                    .radio
-                    .tasks_disable
-                    .write(|w| unsafe { w.bits(1) });
-                // Then wait until disable event is triggered
-                while self.radio.radio.events_disabled.read().bits() == 0 {}
-                // And acknowledge it
-                self.radio.radio.events_disabled.reset();
-                self.receiving = false;
-            }
-            RadioCmd::ListenAdvertising { channel } => {
-                self.radio.prepare_txrx_advertising(channel);
-
-                let rx_buf = self.rx_buf as *mut _ as u32;
-                self.radio
-                    .radio
-                    .packetptr
-                    .write(|w| unsafe { w.bits(rx_buf) });
-
-                // Acknowledge left-over disable event
-                self.radio.radio.events_disabled.reset();
-
-                // Enable `DISABLED` interrupt (packet fully received)
-                self.radio.radio.intenset.write(|w| w.disabled().set());
-
-                // Match on logical address 0 only
-                self.radio.radio.rxaddresses.write(|w| w.addr0().enabled());
-
-                // ...and enter RX mode
-                self.receiving = true;
-                self.radio.radio.tasks_rxen.write(|w| unsafe { w.bits(1) });
-            }
-            RadioCmd::ListenData { .. } => unimplemented!(),
-        }
-    }
-
-    /// Updates the BLE state.
-    ///
-    /// Returns when and if to call `update` next time.
-    // TODO docs
-    pub fn update(&mut self) -> Option<Duration> {
-        self.radio.radio.intenclr.write(|w| w.disabled().clear());
-        self.radio.radio.events_disabled.reset();
-
-        let cmd = self.ll.update(&mut self.radio);
-
-        self.configure_receiver(cmd.radio);
-
-        cmd.next_update
-    }
-
-    pub fn val(&mut self) -> u8 {
-        self.ll.val
+        // ...and kick off the transmission
+        self.radio
+            .shorts
+            .write(|w| w.ready_start().enabled().end_disable().enabled());
     }
 }
