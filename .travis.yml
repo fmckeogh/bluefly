@@ -1,5 +1,5 @@
 language: rust
-rust: beta
+rust: stable
 env: TARGET_BUILD=thumbv7em-none-eabi
 
 stages:
@@ -15,7 +15,7 @@ jobs:
     - stage: compile
       script:
         - rustup target add $TARGET_BUILD
-        - cargo check --target $TARGET_BUILD --all
+        - cargo build --release --target $TARGET_BUILD --all
 
 notifications:
   email:
