@@ -4,7 +4,12 @@ env: TARGET_BUILD=thumbv7em-none-eabi
 
 stages:
   - stylecheck
-  - compile
+  - build
+
+addons:
+  apt:
+    packages:
+    - binutils-arm-none-eabi
 
 jobs:
   include:
@@ -12,10 +17,22 @@ jobs:
       script:
         - rustup component add rustfmt
         - cargo fmt --all -- --check
-    - stage: compile
+    - stage: build
       script:
         - rustup target add $TARGET_BUILD
         - cargo build --release --target $TARGET_BUILD --all
+        - arm-none-eabi-objcopy -SO binary target/$TARGET_BUILD/release/controller target/$TARGET_BUILD/release/controller.bin
+        - arm-none-eabi-objcopy -SO binary target/$TARGET_BUILD/release/receiver target/$TARGET_BUILD/release/receiver.bin
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_OAUTH_TOKEN
+  file:
+    - "target/$TARGET_BUILD/release/controller.bin"
+    - "target/$TARGET_BUILD/release/receiver.bin"
+  skip_cleanup: true
+  on:
+    tags: true
 
 notifications:
   email:
