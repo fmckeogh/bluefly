@@ -260,6 +260,8 @@ impl ScanCallback for PwmCallback {
     {
         match adv_data.last() {
             Some(AdStructure::Unknown { ty: _, data }) => {
+                info!("got val: {}", data[0]);
+
                 let mut val: u16 = 6990 + (u16::from(data[0]) * 2);
                 self.0.seq0.cnt.write(|w| unsafe { w.cnt().bits(1) });
                 self.0

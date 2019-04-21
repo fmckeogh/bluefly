@@ -1,5 +1,5 @@
 language: rust
-rust: stable
+rust: nightly
 env: TARGET_BUILD=thumbv7em-none-eabi
 
 stages:

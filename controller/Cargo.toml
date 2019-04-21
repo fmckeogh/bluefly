@@ -11,17 +11,17 @@ bench = false
 
 [dependencies]
 cortex-m = "0.5.8"
-cortex-m-rtfm = "0.4.2"
+cortex-m-rtfm = { version = "0.4.2", features = ["timer-queue"] }
 cortex-m-rt = "0.6.8"
 embedded-hal = "0.2.2"
 nrf52810-hal = { git = "https://github.com/chocol4te/nrf52-hal", rev = "5befd35", features = ["rt"] }
-nb = "0.1.1"
-fpa = "0.1.0"
 byteorder = { version = "1.3.1", default-features = false }
 panic-semihosting = "0.5.1"
 bitflags = "1.0.4"
-uuid = { version = "0.7.4", default-features = false }
 rubble = { git = "https://github.com/jonas-schievink/rubble.git", rev = "0e49250" }
 rubble-nrf52810 = { git = "https://github.com/jonas-schievink/rubble.git", rev = "0e49250" }
 log = "0.4.6"
 bbqueue = "0.3.2"
+ssd1306 = "0.2.4"
+embedded-graphics = "0.4.7"
+alloc-cortex-m = "0.3.5"
