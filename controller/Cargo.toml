@@ -11,7 +11,7 @@ bench = false
 
 [dependencies]
 cortex-m = "0.5.8"
-cortex-m-rtfm = { version = "0.4.2", features = ["timer-queue"] }
+cortex-m-rtfm = { version = "0.4.3", features = ["timer-queue"] }
 cortex-m-rt = "0.6.8"
 embedded-hal = "0.2.2"
 nrf52810-hal = { git = "https://github.com/chocol4te/nrf52-hal", rev = "5befd35", features = ["rt"] }

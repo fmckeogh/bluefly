@@ -11,7 +11,7 @@ bench = false
 
 [dependencies]
 cortex-m = "0.5.8"
-cortex-m-rtfm = "0.4.2"
+cortex-m-rtfm = "0.4.3"
 cortex-m-rt = "0.6.8"
 embedded-hal = "0.2.2"
 nrf52810-hal = { git = "https://github.com/nrf-rs/nrf52-hal", rev = "6c1ce70", features = ["rt"] }
